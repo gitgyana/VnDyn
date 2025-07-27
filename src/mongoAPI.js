@@ -1,6 +1,3 @@
-// mongoAPI.js - In-Memory Data Storage (No External API)
-
-// In-memory data storage
 let appData = {
   users: [
     {
@@ -103,22 +100,22 @@ let appData = {
   ]
 };
 
-// Utility function to generate simple IDs
+
 export const generateObjectId = () => {
   return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 };
 
-// Simulate async operations with small delays
+
 const simulateDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
-// User API functions
+
 export const userAPI = {
-  // Register a new user
+
   register: async (userData) => {
     await simulateDelay();
     
-    // Check if user already exists
-    const existingUser = appData.users.find(u => 
+
+    const existingUser = appData.users.find(u =>
       u.email === userData.email || u.phone === userData.phone
     );
     
@@ -126,20 +123,20 @@ export const userAPI = {
       throw new Error('User already exists with this email or phone');
     }
     
-    // Create new user
+
     const newUser = {
       _id: userData.email,
       ...userData,
       createdAt: new Date()
     };
     
-    // Add to in-memory storage
+
     appData.users.push(newUser);
     
     return { success: true, data: newUser };
   },
 
-  // Login user
+
   login: async (loginValue, password) => {
     await simulateDelay();
     
@@ -154,7 +151,7 @@ export const userAPI = {
     }
   },
 
-  // Check if user exists
+
   checkExists: async (email, phone) => {
     await simulateDelay();
     const exists = appData.users.some(u => u.email === email || u.phone === phone);
@@ -162,15 +159,15 @@ export const userAPI = {
   }
 };
 
-// Resource API functions
+
 export const resourceAPI = {
-  // Get all resources
+
   getAll: async () => {
     await simulateDelay();
     return appData.resources.sort((a, b) => a.name.localeCompare(b.name));
   },
 
-  // Add a new resource (admin function)
+
   create: async (resourceData) => {
     await simulateDelay();
     const newResource = {
@@ -183,9 +180,9 @@ export const resourceAPI = {
   }
 };
 
-// Order API functions
+
 export const orderAPI = {
-  // Create a new order
+
   create: async (orderData) => {
     await simulateDelay();
     const newOrder = {
@@ -196,7 +193,7 @@ export const orderAPI = {
     };
     appData.orders.push(newOrder);
     
-    // Also create a payment record
+
     const payment = {
       _id: generateObjectId(),
       orderId: newOrder._id,
@@ -211,7 +208,7 @@ export const orderAPI = {
     return { success: true, data: newOrder };
   },
 
-  // Get orders by status
+
   getByStatus: async (status) => {
     await simulateDelay();
     return appData.orders
@@ -219,7 +216,7 @@ export const orderAPI = {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
-  // Get orders by vendor ID
+
   getByVendor: async (vendorId) => {
     await simulateDelay();
     return appData.orders
@@ -227,7 +224,7 @@ export const orderAPI = {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
-  // Update order status
+
   updateStatus: async (orderId, status, additionalData = {}) => {
     await simulateDelay();
     const orderIndex = appData.orders.findIndex(order => order._id === orderId);
@@ -244,9 +241,9 @@ export const orderAPI = {
   }
 };
 
-// Payment API functions
+
 export const paymentAPI = {
-  // Create a payment record
+
   create: async (paymentData) => {
     await simulateDelay();
     const newPayment = {
@@ -259,7 +256,7 @@ export const paymentAPI = {
     return { success: true, data: newPayment };
   },
 
-  // Get payments by status
+
   getByStatus: async (status) => {
     await simulateDelay();
     return appData.payments
@@ -267,7 +264,7 @@ export const paymentAPI = {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
-  // Update payment status
+
   updateStatus: async (paymentId, status) => {
     await simulateDelay();
     const paymentIndex = appData.payments.findIndex(payment => payment._id === paymentId);
@@ -283,9 +280,9 @@ export const paymentAPI = {
   }
 };
 
-// Complaint API functions
+
 export const complaintAPI = {
-  // Submit a new complaint
+
   submit: async (complaintData) => {
     await simulateDelay();
     const newComplaint = {
@@ -298,13 +295,13 @@ export const complaintAPI = {
     return { success: true, data: newComplaint };
   },
 
-  // Get all complaints (admin function)
+
   getAll: async () => {
     await simulateDelay();
     return appData.complaints.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
-  // Resolve a complaint
+
   resolve: async (complaintId) => {
     await simulateDelay();
     const complaintIndex = appData.complaints.findIndex(complaint => complaint._id === complaintId);
@@ -319,7 +316,7 @@ export const complaintAPI = {
     throw new Error('Complaint not found');
   },
 
-  // Delete a complaint (admin function)
+
   delete: async (complaintId) => {
     await simulateDelay();
     const complaintIndex = appData.complaints.findIndex(complaint => complaint._id === complaintId);

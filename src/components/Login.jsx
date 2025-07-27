@@ -13,7 +13,7 @@ export default function Login({ onSuccess, onSignup, onHome }) {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phonePattern = /^[0-9]{10,15}$/;
 
-        // Validation
+
         if (!value || !password) {
             setError("Fill all fields!");
             return;
@@ -47,7 +47,7 @@ export default function Login({ onSuccess, onSignup, onHome }) {
                     value={loginValue}
                     onChange={(e) => {
                         setLoginValue(e.target.value);
-                        setError(""); // Clear error when user starts typing
+                        setError("");
                     }}
                     required
                     disabled={loading}
@@ -59,7 +59,7 @@ export default function Login({ onSuccess, onSignup, onHome }) {
                     value={password}
                     onChange={(e) => {
                         setPassword(e.target.value);
-                        setError(""); // Clear error when user starts typing
+                        setError("");
                     }}
                     required
                     disabled={loading}

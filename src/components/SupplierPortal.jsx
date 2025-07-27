@@ -6,7 +6,7 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
     const [allOrders, setAllOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
-    const [activeTab, setActiveTab] = useState("pending"); // pending, all
+    const [activeTab, setActiveTab] = useState("pending");
 
     useEffect(() => {
         fetchOrders();
@@ -35,7 +35,7 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
             });
             setMessage("Order approved and dispatched!");
             setTimeout(() => setMessage(""), 3000);
-            fetchOrders(); // Refresh orders
+            fetchOrders();
         } catch (error) {
             setMessage("Failed to approve order: " + error.message);
         }
@@ -50,7 +50,7 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
                 });
                 setMessage("Order rejected!");
                 setTimeout(() => setMessage(""), 3000);
-                fetchOrders(); // Refresh orders
+                fetchOrders();
             } catch (error) {
                 setMessage("Failed to reject order: " + error.message);
             }

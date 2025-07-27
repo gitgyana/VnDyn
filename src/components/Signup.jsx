@@ -13,14 +13,14 @@ export default function Signup({ selectedType, onSuccess, onHome, onLogin }) {
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.id]: e.target.value });
-        setError(""); // Clear error when user starts typing
+        setError("");
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const { fullName, phone, email, password } = form;
 
-        // Validation
+
         if (!fullName || !phone || !email || !password) {
             setError("Fill all fields!");
             return;

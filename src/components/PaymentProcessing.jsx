@@ -27,7 +27,7 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
             await paymentAPI.updateStatus(paymentId, 'settled');
             setMessage("Payment settled successfully!");
             setTimeout(() => setMessage(""), 3000);
-            fetchPayments(); // Refresh the list
+            fetchPayments();
         } catch (error) {
             setMessage("Failed to settle payment: " + error.message);
         }
@@ -39,7 +39,7 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                 await paymentAPI.updateStatus(paymentId, 'rejected');
                 setMessage("Payment rejected!");
                 setTimeout(() => setMessage(""), 3000);
-                fetchPayments(); // Refresh the list
+                fetchPayments();
             } catch (error) {
                 setMessage("Failed to reject payment: " + error.message);
             }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// Import all components
+
 import Home from "./components/Home";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
@@ -12,17 +12,17 @@ import PaymentProcessing from "./components/PaymentProcessing";
 import ComplaintForm from "./components/ComplaintForm";
 
 function App() {
-    // Main view states: 'home', 'signup', 'login', 'userData', 'vendor', 'supplier', 'admin', 'payments', 'complaints'
+
     const [view, setView] = useState("home");
 
-    // User and authentication state
+
     const [user, setUser] = useState(null);
     const [selectedType, setSelectedType] = useState("");
 
-    // Message state for notifications
+
     const [message, setMessage] = useState("");
 
-    // Load user from localStorage on app start
+
     useEffect(() => {
         const savedUser = localStorage.getItem("vndyn_user");
         if (savedUser) {
@@ -38,7 +38,7 @@ function App() {
         }
     }, []);
 
-    // Navigation handlers
+
     const goHome = () => {
         setView("home");
         setUser(null);
@@ -102,7 +102,7 @@ function App() {
         localStorage.setItem("vndyn_user", JSON.stringify(userData));
     };
 
-    // Render based on current view
+
     const renderCurrentView = () => {
         switch (view) {
             case "home":

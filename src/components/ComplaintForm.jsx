@@ -30,10 +30,9 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
             if (onSuccess) {
                 onSuccess("Complaint submitted successfully!");
             } else {
-                // If no onSuccess callback, show success message in component
-                setError(""); // Clear any existing errors
+                setError("");
                 alert("Complaint submitted successfully!");
-                setMessage(""); // Clear the form
+                setMessage("");
             }
         } catch (error) {
             console.error(error);
@@ -104,7 +103,7 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
                             value={message}
                             onChange={(e) => {
                                 setMessage(e.target.value);
-                                setError(""); // Clear error when user starts typing
+                                setError("");
                             }}
                             disabled={loading}
                             required

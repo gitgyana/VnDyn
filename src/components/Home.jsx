@@ -6,16 +6,16 @@ export default function Home({ onSelectType }) {
     const [fadeIn, setFadeIn] = useState(false);
     const intervals = useRef({ del: null, type: null });
 
-    // Main handler: called on every suffix change just like the JS function
+
     const setTitleTypedText = useCallback((newSuffix) => {
-        // Clear any running intervals
+
         if (intervals.current.del) clearInterval(intervals.current.del);
         if (intervals.current.type) clearInterval(intervals.current.type);
 
-        let currentText = title; // Start from current displayed text
+        let currentText = title;
         setFadeIn(false);
 
-        // Deletion phase (if any extra chars)
+
         intervals.current.del = setInterval(() => {
             if (currentText.length > baseText.length) {
                 currentText = currentText.slice(0, -1);
@@ -47,7 +47,7 @@ export default function Home({ onSelectType }) {
         }, 30);
     }, [baseText, title]);
 
-    // Clean up on unmount
+
     React.useEffect(() => {
         return () => {
             if (intervals.current.del) clearInterval(intervals.current.del);

@@ -6,7 +6,7 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
-    const [activeTab, setActiveTab] = useState("complaints"); // complaints, resources
+    const [activeTab, setActiveTab] = useState("complaints");
     const [newResource, setNewResource] = useState({
         name: "",
         description: "",
@@ -44,7 +44,7 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
             await complaintAPI.resolve(complaintId);
             setMessage("Complaint resolved successfully!");
             setTimeout(() => setMessage(""), 3000);
-            fetchComplaints(); // Refresh the list
+            fetchComplaints();
         } catch (error) {
             setMessage("Failed to resolve complaint: " + error.message);
         }
@@ -56,7 +56,7 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                 await complaintAPI.delete(complaintId);
                 setMessage("Complaint deleted successfully!");
                 setTimeout(() => setMessage(""), 3000);
-                fetchComplaints(); // Refresh the list
+                fetchComplaints();
             } catch (error) {
                 setMessage("Failed to delete complaint: " + error.message);
             }
@@ -88,7 +88,7 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
             await resourceAPI.create(resourceData);
             setMessage("Resource added successfully!");
             setNewResource({ name: "", description: "", price: "", category: "Ingredients" });
-            fetchResources(); // Refresh the list
+            fetchResources();
             setTimeout(() => setMessage(""), 3000);
         } catch (error) {
             setMessage("Failed to add resource: " + error.message);

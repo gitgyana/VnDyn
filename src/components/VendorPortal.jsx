@@ -7,7 +7,7 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
     const [myOrders, setMyOrders] = useState([]);
-    const [activeTab, setActiveTab] = useState("browse"); // browse, cart, orders
+    const [activeTab, setActiveTab] = useState("browse");
 
     useEffect(() => {
         fetchResources();
