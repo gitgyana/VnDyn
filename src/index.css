@@ -1,0 +1,594 @@
+:root {
+  --primary-color: #2d3436;
+  --glass-bg: rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --text-primary: #2d3436;
+  --text-light: #ffffff;
+  --text-secondary: #dfe6e9;
+  --error-color: #dc2626;
+
+  /* Spacing Scale */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+
+  /* Responsive Font Scale */
+  --font-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --font-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-lg: clamp(1.125rem, 1rem + 0.625vw, 1.5rem);
+  --font-xl: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+
+  /* Border Radius Scale */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+}
+
+/* Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: Monospaced, monospace;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--primary-color) url("assets/imgs/home_bg.jpg") no-repeat fixed center;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  min-height: 100svh; /* Use small viewport height for mobile compatibility */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background Video */
+#bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Main App Container */
+#app {
+  max-width: min(90vw, 800px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  margin: clamp(2rem, 5vh, 5rem) auto;
+  padding: clamp(1rem, 4vw, 2rem);
+  border-radius: var(--radius-xl);
+  box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 1;
+}
+
+h1, h2 {
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0 0 var(--space-md) 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--font-xl);
+}
+
+h2 {
+  font-size: var(--font-lg);
+}
+
+/* Title Animations */
+#title {
+  transition: opacity 0.7s ease-in-out;
+  opacity: 1;
+}
+
+#title.fade-in {
+  opacity: 0.8;
+}
+
+/* Buttons with Enhanced Touch Targets */
+.btn {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-md) auto;
+  padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
+
+  /* Glass morphism styling */
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+
+  /* Typography */
+  color: var(--text-light);
+  font-size: var(--font-base);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Touch-friendly minimum size */
+  min-height: 48px;
+
+  /* Prevent text selection on mobile */
+  -webkit-user-select: none;
+  user-select: none;
+
+  /* Touch action for better mobile performance */
+  touch-action: manipulation;
+}
+
+.btn:hover,
+.btn:focus {
+  background: rgba(43, 45, 48, 0.8);
+  transform: translateY(-1px);
+  box-shadow:
+          0 4px 20px rgba(0, 0, 0, 0.15),
+          0 0 0 2px rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.btn:active {
+  transform: translateY(0);
+  transition-duration: 0.1s;
+}
+
+/* Form Elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+select {
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-sm) auto var(--space-md) auto;
+  padding: clamp(0.75rem, 3vw, 1rem);
+
+  /* Glass morphism styling */
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+
+  /* Typography */
+  font-size: var(--font-base);
+  color: var(--text-primary);
+
+  /* Interaction */
+  transition: all 0.3s ease;
+
+  /* Mobile optimization */
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+input:hover,
+input:focus,
+select:hover,
+select:focus {
+  border-radius: var(--radius-xl);
+  border-color: var(--glass-border);
+  background: rgba(255, 255, 255, 0.3);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+input::placeholder {
+  color: rgba(45, 52, 54, 0.6);
+  opacity: 1;
+}
+
+/* Select Dropdown Styling */
+select {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23333' d='M8 12L3 7h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px;
+  padding-right: 3rem;
+}
+
+/* Links and Secondary Actions */
+.switch-link {
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm);
+  margin-top: var(--space-sm);
+  text-align: center;
+  display: block;
+  width: 100%;
+  font-size: var(--font-sm);
+  text-decoration: underline;
+  transition: all 0.3s ease;
+  touch-action: manipulation;
+  min-height: 44px;
+}
+
+.switch-link:hover,
+.switch-link:focus {
+  color: var(--text-secondary);
+  outline: none;
+  text-decoration: none;
+}
+
+/* Error Messages */
+.error-msg {
+  color: var(--error-color);
+  margin-bottom: var(--space-md);
+  text-align: center;
+  font-size: var(--font-sm);
+  font-weight: 500;
+}
+
+/* Text Elements */
+.text {
+  color: var(--text-light);
+  font-size: var(--font-base);
+}
+
+#msg {
+  margin: var(--space-md) auto;
+  text-align: center;
+  max-width: 100%;
+}
+
+/* ---- RESPONSIVE BREAKPOINTS ---- */
+
+/* Small Mobile Devices (up to 480px) */
+@media screen and (max-width: 480px) {
+  #app {
+    margin: 1rem auto;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    max-width: 95vw;
+  }
+
+  .btn {
+    padding: 1rem;
+    margin: 1rem auto;
+    font-size: 1rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    padding: 1rem;
+    margin: 0.5rem auto 1rem auto;
+    font-size: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Mobile Devices - Portrait (481px to 600px) */
+@media screen and (min-width: 481px) and (max-width: 600px) {
+  #app {
+    margin: 1.5rem auto;
+    padding: 1.5rem;
+    max-width: 90vw;
+  }
+
+  .btn {
+    padding: 0.875rem 1.25rem;
+    margin: 1rem auto;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    padding: 0.875rem;
+    margin: 0.75rem auto 1rem auto;
+  }
+}
+
+/* Small Tablets and Large Phones - Portrait (601px to 768px) */
+@media screen and (min-width: 601px) and (max-width: 768px) {
+  #app {
+    margin: 2rem auto;
+    padding: 2rem;
+    max-width: 85vw;
+  }
+
+  .btn {
+    max-width: 350px;
+    padding: 1rem 1.5rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    max-width: 350px;
+    padding: 1rem;
+  }
+}
+
+/* Tablets - Portrait and Landscape (769px to 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #app {
+    margin: 3rem auto;
+    padding: 2.5rem;
+    max-width: 700px;
+  }
+
+  .btn {
+    max-width: 400px;
+    padding: 1rem 2rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    max-width: 400px;
+    padding: 1rem;
+  }
+}
+
+/* Desktop and Large Tablets (1025px to 1440px) */
+@media screen and (min-width: 1025px) and (max-width: 1440px) {
+  #app {
+    margin: 4rem auto;
+    padding: 3rem;
+    max-width: 800px;
+  }
+
+  .btn {
+    max-width: 400px;
+    padding: 1rem 2rem;
+    margin: 1.5rem auto;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    max-width: 400px;
+    padding: 1rem;
+    margin: 1rem auto 1.5rem auto;
+  }
+}
+
+/* Large Desktop (1441px and up) */
+@media screen and (min-width: 1441px) {
+  #app {
+    margin: 5rem auto;
+    padding: 3rem 4rem;
+    max-width: 900px;
+  }
+
+  .btn {
+    max-width: 450px;
+    padding: 1.25rem 2.5rem;
+    margin: 2rem auto;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    max-width: 450px;
+    padding: 1.25rem;
+    margin: 1rem auto 2rem auto;
+  }
+}
+
+/* ---- ORIENTATION-SPECIFIC STYLES ---- */
+
+/* Portrait Orientation Adjustments */
+@media screen and (orientation: portrait) {
+  #app {
+    margin-top: clamp(1rem, 3vh, 3rem);
+    margin-bottom: clamp(1rem, 3vh, 3rem);
+  }
+
+  .btn {
+    padding: clamp(0.875rem, 4vw, 1.25rem);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    padding: clamp(0.875rem, 4vw, 1.25rem);
+  }
+}
+
+/* Landscape Orientation Adjustments */
+@media screen and (orientation: landscape) {
+  body {
+    min-height: 100lvh; /* Large viewport height for landscape */
+  }
+
+  #app {
+    margin-top: clamp(1rem, 2vh, 2rem);
+    margin-bottom: clamp(1rem, 2vh, 2rem);
+  }
+
+  h1, h2 {
+    margin-bottom: var(--space-sm);
+  }
+}
+
+/* ---- MOBILE-SPECIFIC OPTIMIZATIONS ---- */
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn {
+    min-height: 48px; /* iOS/Android minimum touch target */
+    padding: 1rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    min-height: 48px;
+    padding: 1rem;
+  }
+
+  .switch-link {
+    min-height: 48px;
+    padding: 1rem;
+  }
+
+  /* Remove hover effects on touch devices */
+  .btn:hover {
+    transform: none;
+  }
+
+  /* Add active state for better touch feedback */
+  .btn:active {
+    transform: scale(0.98);
+    background: rgba(43, 45, 48, 0.9);
+  }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  #title {
+    transition: none;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+  }
+}
+
+/* Print Styles */
+@media print {
+  #bg-video,
+  .btn {
+    display: none;
+  }
+
+  #app {
+    background: white;
+    backdrop-filter: none;
+    box-shadow: none;
+    border: 1px solid #000;
+    margin: 0;
+    padding: 1rem;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}
+
+/* ---- ADVANCED RESPONSIVE UTILITIES ---- */
+
+/* Container Query Support (Progressive Enhancement) */
+@supports (container-type: inline-size) {
+  #app {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 400px) {
+    .btn {
+      font-size: 0.9rem;
+      padding: 0.75rem;
+    }
+  }
+
+  @container (min-width: 600px) {
+    .btn {
+      max-width: 350px;
+    }
+  }
+}
+
+/* Modern CSS Grid Fallback for Older Browsers */
+@supports not (backdrop-filter: blur(10px)) {
+  #app {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .btn {
+    background: rgba(59, 130, 246, 0.9);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* Performance Optimizations */
+.btn,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+select {
+  will-change: transform;
+  contain: layout style;
+}
+
