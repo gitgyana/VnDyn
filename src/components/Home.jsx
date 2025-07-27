@@ -6,14 +6,16 @@ export default function Home({ onSelectType }) {
     const [fadeIn, setFadeIn] = useState(false);
     const intervals = useRef({ del: null, type: null });
 
+    // Main handler: called on every suffix change just like the JS function
     const setTitleTypedText = useCallback((newSuffix) => {
+        // Clear any running intervals
         if (intervals.current.del) clearInterval(intervals.current.del);
         if (intervals.current.type) clearInterval(intervals.current.type);
 
-        let currentText = title;
-
+        let currentText = title; // Start from current displayed text
         setFadeIn(false);
 
+        // Deletion phase (if any extra chars)
         intervals.current.del = setInterval(() => {
             if (currentText.length > baseText.length) {
                 currentText = currentText.slice(0, -1);
@@ -45,6 +47,7 @@ export default function Home({ onSelectType }) {
         }, 30);
     }, [baseText, title]);
 
+    // Clean up on unmount
     React.useEffect(() => {
         return () => {
             if (intervals.current.del) clearInterval(intervals.current.del);
@@ -53,26 +56,24 @@ export default function Home({ onSelectType }) {
     }, []);
 
     return (
-        <>
-            <div id="app">
-                <h1 id="title" className={fadeIn ? "fade-in" : ""}>{title}</h1>
-                <button
-                    className="btn"
-                    onMouseOver={() => setTitleTypedText("Street Vendor")}
-                    onMouseOut={() => setTitleTypedText("")}
-                    onClick={() => onSelectType("Street Vendor")}
-                >
-                    Vendor
-                </button>
-                <button
-                    className="btn"
-                    onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
-                   onMouseOut={() => setTitleTypedText("")}
-                    onClick={() => onSelectType("Retailer to Vendor")}
-                >
-                    Retailer
-                </button>
-            </div>
-        </>
+        <div id="app">
+            <h1 id="title" className={fadeIn ? "fade-in" : ""}>{title}</h1>
+            <button
+                className="btn"
+                onMouseOver={() => setTitleTypedText("Street Vendor")}
+                onMouseOut={() => setTitleTypedText("")}
+                onClick={() => onSelectType("Street Vendor")}
+            >
+                Vendor
+            </button>
+            <button
+                className="btn"
+                onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
+                onMouseOut={() => setTitleTypedText("")}
+                onClick={() => onSelectType("Retailer to Vendor")}
+            >
+                Retailer
+            </button>
+        </div>
     );
 }

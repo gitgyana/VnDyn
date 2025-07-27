@@ -1,40 +1,90 @@
 import React, { useState } from "react";
+import { userAPI } from "../mongoAPI";
 
-export default function Login({ onHome, onSignup, onSuccess }) {
-    const [value, setValue] = useState("");
-    const [pw, setPw] = useState("");
+export default function Login({ onSuccess, onSignup, onHome }) {
+    const [loginValue, setLoginValue] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = e => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const value = loginValue.trim();
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phonePattern = /^[0-9]{10,15}$/;
-        if (!value || !pw) return setError("Fill all fields!");
-        const users = JSON.parse(localStorage.getItem("users") || "{}");
-        let userKey = null;
-        if (emailPattern.test(value)) {
-            userKey = Object.keys(users).find(key => users[key].email === value);
-        } else if (phonePattern.test(value)) {
-            userKey = Object.keys(users).find(key => users[key].phone === value);
-        } else {
-            return setError("Enter a valid email or phone!");
+
+        // Validation
+        if (!value || !password) {
+            setError("Fill all fields!");
+            return;
         }
-        const user = userKey ? users[userKey] : null;
-        if (!user || user.password !== pw) return setError("Invalid credentials!");
-        onSuccess({ ...user }, "Login Successful!");
+
+        if (!emailPattern.test(value) && !phonePattern.test(value)) {
+            setError("Enter a valid email or phone number!");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const result = await userAPI.login(value, password);
+            if (result.success) {
+                onSuccess(result.data);
+            }
+        } catch (err) {
+            setError(err.message || "Invalid credentials!");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div id="app">
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
-                <input type="text" id="login-value" placeholder="Email or Phone" value={value} onChange={e => setValue(e.target.value)} required />
-                <input type="password" id="login-password" placeholder="Password" value={pw} onChange={e => setPw(e.target.value)} required />
-                <button className="btn" type="submit">Login</button>
-                <button type="button" className="switch-link" onClick={onSignup}>Don't have an account? Sign up</button>
+                <input
+                    type="text"
+                    placeholder="Email or Phone"
+                    value={loginValue}
+                    onChange={(e) => {
+                        setLoginValue(e.target.value);
+                        setError(""); // Clear error when user starts typing
+                    }}
+                    required
+                    disabled={loading}
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError(""); // Clear error when user starts typing
+                    }}
+                    required
+                    disabled={loading}
+                />
+                <button className="btn" type="submit" disabled={loading}>
+                    {loading ? "Logging in..." : "Login"}
+                </button>
+                <button
+                    type="button"
+                    className="switch-link"
+                    onClick={onSignup}
+                    disabled={loading}
+                >
+                    Don't have an account? Sign up
+                </button>
             </form>
-            <button type="button" className="switch-link" onClick={onHome}>Back</button>
-            <div className="error-msg">{error}</div>
+            <button
+                type="button"
+                className="switch-link"
+                onClick={onHome}
+                disabled={loading}
+            >
+                ← Back
+            </button>
+            {error && <div className="error-msg">{error}</div>}
         </div>
     );
 }
