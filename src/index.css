@@ -110,7 +110,7 @@ h2 {
 .btn {
   display: block;
   width: 100%;
-  max-width: 400px;
+  /* max-width: 400px; */
   margin: var(--space-md) auto;
   padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
 
@@ -165,7 +165,7 @@ input[type="password"],
 input[type="tel"],
 select {
   width: 100%;
-  max-width: 400px;
+  /* max-width: 400px; */
   margin: var(--space-sm) auto var(--space-md) auto;
   padding: clamp(0.75rem, 3vw, 1rem);
 
@@ -351,7 +351,7 @@ select {
   }
 
   .btn {
-    max-width: 400px;
+    /* max-width: 400px; */
     padding: 1rem 2rem;
   }
 
@@ -360,7 +360,7 @@ select {
   input[type="password"],
   input[type="tel"],
   select {
-    max-width: 400px;
+    /* max-width: 400px; */
     padding: 1rem;
   }
 }
@@ -374,7 +374,7 @@ select {
   }
 
   .btn {
-    max-width: 400px;
+    /* max-width: 400px; */
     padding: 1rem 2rem;
     margin: 1.5rem auto;
   }
@@ -384,7 +384,7 @@ select {
   input[type="password"],
   input[type="tel"],
   select {
-    max-width: 400px;
+    /* max-width: 400px; */
     padding: 1rem;
     margin: 1rem auto 1.5rem auto;
   }
@@ -409,9 +409,9 @@ select {
   input[type="password"],
   input[type="tel"],
   select {
-    max-width: 450px;
+    /* max-width: 450px; */
     padding: 1.25rem;
-    margin: 1rem auto 2rem auto;
+    margin: 10px auto 10px auto;
   }
 }
 
