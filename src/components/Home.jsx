@@ -1,11 +1,11 @@
 import React, { useState, useRef, useCallback } from "react";
 
-export default function Home({ onSelectType }) {
+export default function Home({ onSelectType, onLogin }) {
+
     const baseText = "VnDyn";
     const [title, setTitle] = useState(baseText);
     const [fadeIn, setFadeIn] = useState(false);
     const intervals = useRef({ del: null, type: null });
-
 
     const setTitleTypedText = useCallback((newSuffix) => {
 
@@ -14,7 +14,6 @@ export default function Home({ onSelectType }) {
 
         let currentText = title;
         setFadeIn(false);
-
 
         intervals.current.del = setInterval(() => {
             if (currentText.length > baseText.length) {
@@ -45,8 +44,8 @@ export default function Home({ onSelectType }) {
                 }
             }
         }, 30);
-    }, [baseText, title]);
 
+    }, [baseText, title]);
 
     React.useEffect(() => {
         return () => {
@@ -56,24 +55,58 @@ export default function Home({ onSelectType }) {
     }, []);
 
     return (
-        <div id="app">
-            <h1 id="title" className={fadeIn ? "fade-in" : ""}>{title}</h1>
-            <button
-                className="btn"
-                onMouseOver={() => setTitleTypedText("Street Vendor")}
-                onMouseOut={() => setTitleTypedText("")}
-                onClick={() => onSelectType("Street Vendor")}
-            >
-                Vendor
-            </button>
-            <button
-                className="btn"
-                onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
-                onMouseOut={() => setTitleTypedText("")}
-                onClick={() => onSelectType("Retailer to Vendor")}
-            >
-                Retailer
-            </button>
+        <div className="landing-container">
+
+            {/* Top Nav */}
+            <nav className="top-nav">
+                <h2>VnDyn</h2>
+                <div>
+                    <button
+                        className="nav-btn"
+                        onClick={() => onSelectType("")}
+                    >
+                        Sign Up
+                    </button>
+                    <button
+                        className="nav-btn"
+                        onClick={onLogin}
+                    >
+                        Login
+                    </button>
+                </div>
+            </nav>
+
+            {/* Hero */}
+            <div className="hero-section">
+                <h1 className={fadeIn ? "fade-in" : ""}>{title}</h1>
+
+                <p className="subtitle">
+                    Digital Hub for Street Food Vendors & Resource Retailers
+                </p>
+
+                <div className="button-group">
+
+                    <button
+                        className="btn"
+                        onMouseOver={() => setTitleTypedText("Street Vendor")}
+                        onMouseOut={() => setTitleTypedText("")}
+                        onClick={() => onSelectType("Street Vendor")}
+                    >
+                        Join as Vendor
+                    </button>
+
+                    <button
+                        className="btn"
+                        onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
+                        onMouseOut={() => setTitleTypedText("")}
+                        onClick={() => onSelectType("Retailer to Vendor")}
+                    >
+                        Join as Retailer
+                    </button>
+
+                </div>
+            </div>
+
         </div>
     );
 }

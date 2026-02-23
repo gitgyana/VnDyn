@@ -106,7 +106,7 @@ function App() {
     const renderCurrentView = () => {
         switch (view) {
             case "home":
-                return <Home onSelectType={goSignup} />;
+                return <Home onSelectType={goSignup} onLogin={goLogin} />;
 
             case "signup":
                 return (
