@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import bgVideo from "../assets/videos/bg_vid.mp4";
 
 export default function Home({ onSelectType, onLogin }) {
 
@@ -47,7 +48,7 @@ export default function Home({ onSelectType, onLogin }) {
 
     }, [baseText, title]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             if (intervals.current.del) clearInterval(intervals.current.del);
             if (intervals.current.type) clearInterval(intervals.current.type);
@@ -57,56 +58,71 @@ export default function Home({ onSelectType, onLogin }) {
     return (
         <div className="landing-container">
 
-            {/* Top Nav */}
-            <nav className="top-nav">
-                <h2>VnDyn</h2>
-                <div>
-                    <button
-                        className="nav-btn"
-                        onClick={() => onSelectType("")}
-                    >
-                        Sign Up
-                    </button>
-                    <button
-                        className="nav-btn"
-                        onClick={onLogin}
-                    >
-                        Login
-                    </button>
+            {/* Background Video */}
+            <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="background-video"
+            >
+                <source src={bgVideo} type="video/mp4" />
+            </video>
+
+            {/* Dark Overlay + Content */}
+            <div className="content-overlay">
+
+                {/* Top Navigation */}
+                <nav className="top-nav">
+                    <h2 className="logo">VnDyn</h2>
+                    <div>
+                        <button
+                            className="nav-btn"
+                            onClick={() => onSelectType("")}
+                        >
+                            Sign Up
+                        </button>
+                        <button
+                            className="nav-btn"
+                            onClick={onLogin}
+                        >
+                            Login
+                        </button>
+                    </div>
+                </nav>
+
+                {/* Hero Section */}
+                <div className="hero-section">
+                    <h1 className={fadeIn ? "fade-in" : ""}>{title}</h1>
+
+                    <p className="subtitle">
+                        Digital Hub for Street Food Vendors & Resource Retailers
+                    </p>
+
+                    <div className="button-group">
+
+                        <button
+                            className="btn primary-btn"
+                            onMouseOver={() => setTitleTypedText("Street Vendor")}
+                            onMouseOut={() => setTitleTypedText("")}
+                            onClick={() => onSelectType("Street Vendor")}
+                        >
+                            Join as Vendor
+                        </button>
+
+                        <button
+                            className="btn secondary-btn"
+                            onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
+                            onMouseOut={() => setTitleTypedText("")}
+                            onClick={() => onSelectType("Retailer to Vendor")}
+                        >
+                            Join as Retailer
+                        </button>
+
+                    </div>
                 </div>
-            </nav>
 
-            {/* Hero */}
-            <div className="hero-section">
-                <h1 className={fadeIn ? "fade-in" : ""}>{title}</h1>
-
-                <p className="subtitle">
-                    Digital Hub for Street Food Vendors & Resource Retailers
-                </p>
-
-                <div className="button-group">
-
-                    <button
-                        className="btn"
-                        onMouseOver={() => setTitleTypedText("Street Vendor")}
-                        onMouseOut={() => setTitleTypedText("")}
-                        onClick={() => onSelectType("Street Vendor")}
-                    >
-                        Join as Vendor
-                    </button>
-
-                    <button
-                        className="btn"
-                        onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
-                        onMouseOut={() => setTitleTypedText("")}
-                        onClick={() => onSelectType("Retailer to Vendor")}
-                    >
-                        Join as Retailer
-                    </button>
-
-                </div>
             </div>
-
         </div>
     );
 }
