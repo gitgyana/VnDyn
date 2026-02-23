@@ -170,7 +170,7 @@ select {
   padding: clamp(0.75rem, 3vw, 1rem);
 
   /* Glass morphism styling */
-  background: var(--glass-bg);
+  /* background: var(--glass-bg); */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid transparent;
