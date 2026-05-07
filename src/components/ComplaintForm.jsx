@@ -2,7 +2,6 @@ import {useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {useAuth} from '../AuthContext'
 import {complaintAPI} from '../api'
-import Layout from './Layout'
 
 export default function ComplaintForm() {
     const {user} = useAuth()
@@ -18,7 +17,7 @@ export default function ComplaintForm() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!message.trim()) {
-            setError('Please describe your issue');
+            setError('Please enter complaint details');
             return
         }
         setLoading(true);
@@ -33,98 +32,101 @@ export default function ComplaintForm() {
             setSuccess(true)
             setTimeout(() => navigate('/dashboard'), 2000)
         } catch (err) {
-            setError('Could not submit. Please try again.')
+            setError('Could not submit complaint. Please try again.')
         } finally {
             setLoading(false)
         }
     }
 
-    if (success) {
-        return (
-            <Layout title="Complaint Filed">
-                <div style={{maxWidth: 480, margin: '40px auto', textAlign: 'center'}}>
-                    <div style={{fontSize: '3rem', marginBottom: 20}}>✅</div>
-                    <h2 style={{fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: 12}}>Complaint
-                        Submitted</h2>
-                    <p style={{color: 'var(--text-2)'}}>Our team will review your complaint shortly. Redirecting to
-                        dashboard...</p>
-                </div>
-            </Layout>
-        )
-    }
+    if (success) return (
+        <div id="app" style={{textAlign: 'center'}}>
+            <h2 className="text">Complaint Submitted</h2>
+            <div className="success-msg">Complaint submitted successfully! Redirecting to dashboard...</div>
+        </div>
+    )
 
     return (
-        <Layout title="Lodge a Complaint" subtitle="Submit your issue and our team will get back to you">
-            <div style={{maxWidth: 560}}>
-                <div className="card" style={{padding: '32px 28px'}}>
-                    {error && <div className="alert alert-error">{error}</div>}
+        <div id="app">
+            <h2 className="text">Lodge a Complaint</h2>
 
-                    {/* Filed by */}
+            <div className="panel">
+                <div style={{
+                    marginBottom: '1.25rem',
+                    padding: '0.75rem 1rem',
+                    background: 'rgba(0,0,0,0.2)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid rgba(255,255,255,0.08)'
+                }}>
                     <div style={{
-                        padding: '14px 16px',
-                        background: 'rgba(0,0,0,0.2)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius)',
-                        marginBottom: 24
-                    }}>
-                        <div style={{
-                            fontSize: '0.75rem',
-                            color: 'var(--text-3)',
-                            marginBottom: 6,
-                            fontWeight: 600,
-                            letterSpacing: '0.04em'
-                        }}>FILING AS
-                        </div>
-                        <div style={{fontWeight: 600, color: 'var(--text)', marginBottom: 2}}>{user?.fullName}</div>
-                        <div style={{fontSize: '0.8125rem', color: 'var(--text-3)'}}>{user?.type} · {user?.email}</div>
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        marginBottom: 4,
+                        fontWeight: 600,
+                        letterSpacing: '0.04em'
+                    }}>FILING AS
+                    </div>
+                    <div style={{fontWeight: 600, color: '#fff', marginBottom: 2}}>{user?.fullName}</div>
+                    <div
+                        style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{user?.type} - {user?.email}</div>
+                </div>
+
+                <form onSubmit={handleSubmit} style={{display: 'grid', gap: '0.5rem'}}>
+                    <label className="text"
+                           style={{display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '0.9rem'}}>Complaint
+                        Category</label>
+                    <select value={category} onChange={e => setCategory(e.target.value)} disabled={loading}
+                            style={{margin: '0 0 1rem 0'}}>
+                        {CATEGORIES.map(c => <option key={c}
+                                                     value={c}>{c === 'Other' ? 'Other' : c + ' Issue'}</option>)}
+                    </select>
+
+                    <label className="text"
+                           style={{display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '0.9rem'}}>Describe
+                        your issue</label>
+                    <textarea
+                        rows={6}
+                        placeholder="Please provide detailed information about your complaint, including any relevant order IDs, dates, or other context..."
+                        value={message}
+                        onChange={e => {
+                            setMessage(e.target.value);
+                            setError('')
+                        }}
+                        disabled={loading}
+                        required
+                        style={{margin: '0 0 0.5rem 0'}}
+                    />
+                    <div style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        marginBottom: '0.75rem'
+                    }}>{message.length}/500 characters
                     </div>
 
-                    <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: 20}}>
-                        <div className="field" style={{marginBottom: 0}}>
-                            <label className="label">Complaint Category</label>
-                            <select className="input" value={category} onChange={e => setCategory(e.target.value)}
-                                    disabled={loading}>
-                                {CATEGORIES.map(c => <option key={c}
-                                                             value={c}>{c === 'Other' ? 'Other' : c + ' Issue'}</option>)}
-                            </select>
-                        </div>
+                    {error && <div className="error-msg">{error}</div>}
 
-                        <div className="field" style={{marginBottom: 0}}>
-                            <label className="label">Describe your issue</label>
-                            <textarea
-                                className="input"
-                                rows={6}
-                                placeholder="Please provide detailed information about your complaint, including any relevant order IDs, dates, or other context..."
-                                value={message}
-                                onChange={e => {
-                                    setMessage(e.target.value);
-                                    setError('')
-                                }}
-                                disabled={loading}
-                                required
-                                style={{minHeight: 140}}
-                            />
-                            <div style={{fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 6}}>
-                                {message.length}/500 characters
-                            </div>
-                        </div>
-
-                        <div style={{display: 'flex', gap: 12}}>
-                            <button type="button" className="btn-ghost" onClick={() => navigate(-1)} disabled={loading}
-                                    style={{flex: 1}}>
-                                Cancel
-                            </button>
-                            <button type="submit" className="btn-primary" disabled={loading || !message.trim()}
-                                    style={{flex: 2, padding: '14px'}}>
-                                {loading ? <><span className="spinner" style={{
-                                    width: 16,
-                                    height: 16
-                                }}/> Submitting...</> : 'Submit Complaint'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div style={{display: 'flex', gap: '0.75rem'}}>
+                        <button type="button" className="btn" onClick={() => navigate(-1)} disabled={loading}
+                                style={{flex: 1}}>Cancel
+                        </button>
+                        <button type="submit" className="btn primary-btn" disabled={loading || !message.trim()}
+                                style={{flex: 2, width: 'auto', opacity: loading || !message.trim() ? 0.5 : 1}}>
+                            {loading ? <><span className="spinner"/>Submitting...</> : 'Submit Complaint'}
+                        </button>
+                    </div>
+                </form>
             </div>
-        </Layout>
+
+            <div style={{
+                marginTop: '1.5rem',
+                display: 'flex',
+                gap: '0.75rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+            }}>
+                <button className="switch-link" onClick={() => navigate('/dashboard')}
+                        style={{width: 'auto', minHeight: 'auto', padding: '0.5rem 1rem'}}>Back to Dashboard
+                </button>
+            </div>
+        </div>
     )
 }
