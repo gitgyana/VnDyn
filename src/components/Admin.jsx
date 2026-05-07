@@ -1,348 +1,263 @@
-import React, { useEffect, useState } from "react";
-import { complaintAPI, resourceAPI, generateObjectId } from "../api.js";
+import {useState, useEffect} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useAuth} from '../AuthContext'
+import {complaintAPI, resourceAPI, generateObjectId} from '../api'
+import Layout from './Layout'
 
-export default function Admin({ user, onHome, onUserData, onPayments }) {
-    const [complaints, setComplaints] = useState([]);
-    const [resources, setResources] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [message, setMessage] = useState("");
-    const [activeTab, setActiveTab] = useState("complaints");
-    const [newResource, setNewResource] = useState({
-        name: "",
-        description: "",
-        price: "",
-        category: "Ingredients"
-    });
+export default function Admin() {
+    const {user} = useAuth()
+    const navigate = useNavigate()
+    const [complaints, setComplaints] = useState([])
+    const [resources, setResources] = useState([])
+    const [tab, setTab] = useState('complaints')
+    const [msg, setMsg] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [newResource, setNewResource] = useState({name: '', description: '', price: '', category: 'Ingredients'})
 
     useEffect(() => {
-        fetchComplaints();
-        fetchResources();
-    }, []);
+        Promise.all([fetchComplaints(), fetchResources()]).finally(() => setLoading(false))
+    }, [])
 
     const fetchComplaints = async () => {
         try {
-            const data = await complaintAPI.getAll();
-            setComplaints(data);
-        } catch (error) {
-            setMessage("Failed to load complaints: " + error.message);
-        } finally {
-            setLoading(false);
+            setComplaints(await complaintAPI.getAll())
+        } catch (e) {
         }
-    };
-
+    }
     const fetchResources = async () => {
         try {
-            const data = await resourceAPI.getAll();
-            setResources(data);
-        } catch (error) {
-            console.error("Failed to load resources:", error);
+            setResources(await resourceAPI.getAll())
+        } catch (e) {
         }
-    };
-
-    const resolveComplaint = async (complaintId) => {
-        try {
-            await complaintAPI.resolve(complaintId);
-            setMessage("Complaint resolved successfully!");
-            setTimeout(() => setMessage(""), 3000);
-            fetchComplaints();
-        } catch (error) {
-            setMessage("Failed to resolve complaint: " + error.message);
-        }
-    };
-
-    const deleteComplaint = async (complaintId) => {
-        if (window.confirm("Are you sure you want to delete this complaint?")) {
-            try {
-                await complaintAPI.delete(complaintId);
-                setMessage("Complaint deleted successfully!");
-                setTimeout(() => setMessage(""), 3000);
-                fetchComplaints();
-            } catch (error) {
-                setMessage("Failed to delete complaint: " + error.message);
-            }
-        }
-    };
-
-    const handleResourceChange = (e) => {
-        const { name, value } = e.target;
-        setNewResource(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const addResource = async (e) => {
-        e.preventDefault();
-        if (!newResource.name || !newResource.description || !newResource.price) {
-            setMessage("Please fill all fields for the new resource");
-            return;
-        }
-
-        try {
-            const resourceData = {
-                ...newResource,
-                price: parseFloat(newResource.price),
-                _id: generateObjectId()
-            };
-
-            await resourceAPI.create(resourceData);
-            setMessage("Resource added successfully!");
-            setNewResource({ name: "", description: "", price: "", category: "Ingredients" });
-            fetchResources();
-            setTimeout(() => setMessage(""), 3000);
-        } catch (error) {
-            setMessage("Failed to add resource: " + error.message);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div id="app">
-                <div className="text" style={{ textAlign: "center", padding: "2rem" }}>
-                    Loading admin dashboard...
-                </div>
-            </div>
-        );
     }
 
+    const notify = (m) => {
+        setMsg(m);
+        setTimeout(() => setMsg(''), 3000)
+    }
+
+    const resolve = async (id) => {
+        try {
+            await complaintAPI.resolve(id);
+            notify('Complaint resolved.');
+            fetchComplaints()
+        } catch (e) {
+            notify('Failed')
+        }
+    }
+    const deleteCom = async (id) => {
+        if (!confirm('Delete this complaint?')) return
+        try {
+            await complaintAPI.delete(id);
+            notify('Deleted.');
+            fetchComplaints()
+        } catch (e) {
+            notify('Failed')
+        }
+    }
+
+    const addResource = async (e) => {
+        e.preventDefault()
+        if (!newResource.name || !newResource.description || !newResource.price) {
+            notify('Fill all fields');
+            return
+        }
+        try {
+            await resourceAPI.create({...newResource, price: parseFloat(newResource.price), _id: generateObjectId()})
+            notify('Resource added!');
+            setNewResource({name: '', description: '', price: '', category: 'Ingredients'});
+            fetchResources()
+        } catch (e) {
+            notify('Failed: ' + e.message)
+        }
+    }
+
+    if (loading) return <Layout title="Admin Dashboard">
+        <div style={{textAlign: 'center', padding: 60}}><span className="spinner"/></div>
+    </Layout>
+
+    const pending = complaints.filter(c => c.status === 'pending')
+
     return (
-        <div id="app">
-            <h2 className="text">Admin Dashboard - {user.fullName}</h2>
+        <Layout title="Admin Dashboard" subtitle={`Platform management · ${user.fullName}`}>
+            {msg && <div className="alert alert-success">{msg}</div>}
 
-            {message && (
-                <div style={{
-                    background: "rgba(76, 222, 128, 0.2)",
-                    color: "#4ade80",
-                    padding: "0.75rem",
-                    borderRadius: "0.5rem",
-                    marginBottom: "1rem",
-                    textAlign: "center",
-                    border: "1px solid rgba(76, 222, 128, 0.3)"
-                }}>
-                    {message}
-                </div>
-            )}
-
-            {/* Tab Navigation */}
-            <div style={{
-                display: "flex",
-                gap: "1rem",
-                marginBottom: "2rem",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                paddingBottom: "1rem"
-            }}>
-                <button
-                    className={activeTab === "complaints" ? "btn" : "switch-link"}
-                    onClick={() => setActiveTab("complaints")}
-                    style={{ maxWidth: "200px" }}
-                >
-                    Complaints ({complaints.filter(c => c.status === "pending").length})
+            <div className="tab-bar">
+                <button className={`tab ${tab === 'complaints' ? 'active' : ''}`} onClick={() => setTab('complaints')}>
+                    Complaints
+                    {pending.length > 0 && <span style={{
+                        background: 'var(--red)',
+                        color: '#fff',
+                        borderRadius: 100,
+                        padding: '1px 7px',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        marginLeft: 4
+                    }}>{pending.length}</span>}
                 </button>
-                <button
-                    className={activeTab === "resources" ? "btn" : "switch-link"}
-                    onClick={() => setActiveTab("resources")}
-                    style={{ maxWidth: "200px" }}
-                >
-                    Manage Resources
+                <button className={`tab ${tab === 'resources' ? 'active' : ''}`} onClick={() => setTab('resources')}>
+                    Resources ({resources.length})
                 </button>
             </div>
 
-            {/* Complaints Tab */}
-            {activeTab === "complaints" && (
+            {tab === 'complaints' && (
                 <div>
-                    <h3 className="text">Complaint Management</h3>
-                    {complaints.length > 0 ? (
-                        <div style={{ display: "grid", gap: "1rem" }}>
-                            {complaints.map((complaint) => (
-                                <div key={complaint._id} style={{
-                                    background: "rgba(255, 255, 255, 0.05)",
-                                    padding: "1.5rem",
-                                    borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.1)"
-                                }}>
-                                    <div style={{ marginBottom: "1rem" }}>
-                                        <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                            {complaint.category} Complaint
-                                        </h4>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                                            <strong>From:</strong> {complaint.partyName}
-                                        </p>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                                            <strong>Date:</strong> {new Date(complaint.createdAt).toLocaleDateString()}
-                                        </p>
-                                        <p className="text" style={{ margin: "0 0 1rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                                            <strong>Message:</strong> {complaint.message}
-                                        </p>
-                                        <span style={{
-                                            padding: "0.25rem 0.75rem",
-                                            borderRadius: "1rem",
-                                            fontSize: "0.8rem",
-                                            fontWeight: "bold",
-                                            background: complaint.status === "pending" ?
-                                                "rgba(234, 179, 8, 0.2)" :
-                                                "rgba(34, 197, 94, 0.2)",
-                                            color: complaint.status === "pending" ?
-                                                "#eab308" :
-                                                "#22c55e"
-                                        }}>
-                                            {complaint.status.toUpperCase()}
-                                        </span>
+                    {complaints.length === 0 ? (
+                        <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>No complaints
+                            found.</div>
+                    ) : (
+                        <div style={{display: 'grid', gap: 12}}>
+                            {complaints.map(c => (
+                                <div key={c._id} className="card" style={{padding: '20px 24px'}}>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        flexWrap: 'wrap',
+                                        gap: 10,
+                                        marginBottom: 12
+                                    }}>
+                                        <div>
+                                            <div style={{
+                                                fontFamily: 'var(--font-display)',
+                                                fontWeight: 700,
+                                                marginBottom: 4
+                                            }}>
+                                                {c.category} Complaint
+                                            </div>
+                                            <div style={{
+                                                fontSize: '0.8125rem',
+                                                color: 'var(--text-3)',
+                                                marginBottom: 2
+                                            }}>
+                                                From: <span style={{color: 'var(--text-2)'}}>{c.partyName}</span>
+                                            </div>
+                                            <div style={{fontSize: '0.75rem', color: 'var(--text-3)'}}>
+                                                {new Date(c.createdAt).toLocaleDateString('en-IN', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })}
+                                            </div>
+                                        </div>
+                                        <span
+                                            className={`badge ${c.status === 'pending' ? 'badge-pending' : 'badge-settled'}`}>{c.status}</span>
                                     </div>
-
-                                    {complaint.status === "pending" && (
-                                        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-                                            <button
-                                                className="btn"
-                                                onClick={() => resolveComplaint(complaint._id)}
-                                                style={{
-                                                    maxWidth: "120px",
-                                                    margin: 0,
-                                                    background: "rgba(34, 197, 94, 0.8)"
-                                                }}
-                                            >
-                                                Resolve
+                                    <div style={{
+                                        padding: '12px 14px',
+                                        background: 'rgba(0,0,0,0.2)',
+                                        borderRadius: 8,
+                                        fontSize: '0.875rem',
+                                        color: 'var(--text-2)',
+                                        lineHeight: 1.6,
+                                        marginBottom: 14
+                                    }}>
+                                        {c.message}
+                                    </div>
+                                    {c.status === 'pending' && (
+                                        <div style={{display: 'flex', gap: 10, justifyContent: 'flex-end'}}>
+                                            <button className="btn-danger" onClick={() => deleteCom(c._id)}>Delete
                                             </button>
-                                            <button
-                                                className="btn"
-                                                onClick={() => deleteComplaint(complaint._id)}
-                                                style={{
-                                                    maxWidth: "100px",
-                                                    margin: 0,
-                                                    background: "rgba(239, 68, 68, 0.8)"
-                                                }}
-                                            >
-                                                Delete
+                                            <button className="btn-success" onClick={() => resolve(c._id)}>✓ Resolve
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <div className="text" style={{ textAlign: "center", padding: "2rem", opacity: 0.7 }}>
-                            No complaints found.
-                        </div>
                     )}
                 </div>
             )}
 
-            {/* Resources Tab */}
-            {activeTab === "resources" && (
+            {tab === 'resources' && (
                 <div>
-                    <h3 className="text">Resource Management</h3>
-
-                    {/* Add New Resource Form */}
-                    <div style={{
-                        background: "rgba(255, 255, 255, 0.05)",
-                        padding: "1.5rem",
-                        borderRadius: "0.5rem",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                        marginBottom: "2rem"
-                    }}>
-                        <h4 className="text" style={{ margin: "0 0 1rem 0" }}>Add New Resource</h4>
-                        <form onSubmit={addResource} style={{ display: "grid", gap: "1rem" }}>
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="Resource Name"
-                                value={newResource.name}
-                                onChange={handleResourceChange}
-                                required
-                                style={{ maxWidth: "100%" }}
-                            />
-                            <input
-                                type="text"
-                                name="description"
-                                placeholder="Description"
-                                value={newResource.description}
-                                onChange={handleResourceChange}
-                                required
-                                style={{ maxWidth: "100%" }}
-                            />
-                            <input
-                                type="number"
-                                name="price"
-                                placeholder="Price (₹)"
-                                value={newResource.price}
-                                onChange={handleResourceChange}
-                                required
-                                min="0"
-                                step="0.01"
-                                style={{ maxWidth: "100%" }}
-                            />
-                            <select
-                                name="category"
-                                value={newResource.category}
-                                onChange={handleResourceChange}
-                                style={{ maxWidth: "100%" }}
-                            >
-                                <option value="Ingredients">Ingredients</option>
-                                <option value="Packaging">Packaging</option>
-                                <option value="Equipment">Equipment</option>
-                                <option value="Supplies">Supplies</option>
-                            </select>
-                            <button
-                                type="submit"
-                                className="btn"
-                                style={{ maxWidth: "200px", margin: "0 auto" }}
-                            >
-                                Add Resource
-                            </button>
+                    {/* Add new */}
+                    <div className="card" style={{padding: '24px', marginBottom: 24}}>
+                        <h3 style={{
+                            fontFamily: 'var(--font-display)',
+                            fontWeight: 700,
+                            marginBottom: 20,
+                            fontSize: '1rem'
+                        }}>
+                            Add New Resource
+                        </h3>
+                        <form onSubmit={addResource} style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14}}>
+                            <div className="field" style={{marginBottom: 0}}>
+                                <label className="label">Resource Name</label>
+                                <input className="input" placeholder="e.g. Cooking Oil" value={newResource.name}
+                                       onChange={e => setNewResource(p => ({...p, name: e.target.value}))}/>
+                            </div>
+                            <div className="field" style={{marginBottom: 0}}>
+                                <label className="label">Category</label>
+                                <select className="input" value={newResource.category}
+                                        onChange={e => setNewResource(p => ({...p, category: e.target.value}))}>
+                                    <option>Ingredients</option>
+                                    <option>Packaging</option>
+                                    <option>Equipment</option>
+                                    <option>Supplies</option>
+                                </select>
+                            </div>
+                            <div className="field" style={{marginBottom: 0, gridColumn: '1/-1'}}>
+                                <label className="label">Description</label>
+                                <input className="input" placeholder="Brief description" value={newResource.description}
+                                       onChange={e => setNewResource(p => ({...p, description: e.target.value}))}/>
+                            </div>
+                            <div className="field" style={{marginBottom: 0}}>
+                                <label className="label">Price (₹)</label>
+                                <input className="input" type="number" min="0" step="0.01" placeholder="0.00"
+                                       value={newResource.price}
+                                       onChange={e => setNewResource(p => ({...p, price: e.target.value}))}/>
+                            </div>
+                            <div style={{display: 'flex', alignItems: 'flex-end'}}>
+                                <button type="submit" className="btn-primary" style={{width: '100%'}}>+ Add Resource
+                                </button>
+                            </div>
                         </form>
                     </div>
 
-                    {/* Existing Resources List */}
-                    <h4 className="text">Existing Resources ({resources.length})</h4>
-                    {resources.length > 0 ? (
-                        <div style={{ display: "grid", gap: "1rem" }}>
-                            {resources.map((resource) => (
-                                <div key={resource._id} style={{
-                                    background: "rgba(255, 255, 255, 0.05)",
-                                    padding: "1rem",
-                                    borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center"
-                                }}>
-                                    <div>
-                                        <h5 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                            {resource.name}
-                                        </h5>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                                            {resource.description}
-                                        </p>
-                                        <p className="text" style={{ margin: 0, fontSize: "0.9rem", color: "#4ade80" }}>
-                                            <strong>₹{resource.price}</strong> | {resource.category}
-                                        </p>
+                    {/* List */}
+                    <div style={{display: 'grid', gap: 10}}>
+                        {resources.map(r => (
+                            <div key={r._id} className="card" style={{
+                                padding: '16px 20px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: 16,
+                                flexWrap: 'wrap'
+                            }}>
+                                <div style={{flex: 1}}>
+                                    <div style={{fontWeight: 600, marginBottom: 3}}>{r.name}</div>
+                                    <div style={{
+                                        fontSize: '0.8125rem',
+                                        color: 'var(--text-3)',
+                                        marginBottom: 4
+                                    }}>{r.description}</div>
+                                    <div style={{display: 'flex', gap: 10, alignItems: 'center'}}>
+                                        <span style={{color: 'var(--accent)', fontWeight: 700}}>₹{r.price}</span>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            color: 'var(--text-3)',
+                                            padding: '2px 8px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            borderRadius: 4
+                                        }}>{r.category}</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text" style={{ opacity: 0.7 }}>No resources found.</p>
-                    )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div style={{
-                marginTop: "2rem",
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                flexWrap: "wrap"
-            }}>
-                <button className="switch-link" onClick={onPayments}>
-                    Payment Processing
+            <div style={{marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap'}}>
+                <button className="btn-ghost" onClick={() => navigate('/payments')} style={{fontSize: '0.875rem'}}>💳
+                    Payments
                 </button>
-                <button className="switch-link" onClick={onUserData}>
-                    Back to Dashboard
-                </button>
-                <button className="switch-link" onClick={onHome}>
-                    Logout
+                <button className="btn-ghost" onClick={() => navigate('/dashboard')} style={{fontSize: '0.875rem'}}>←
+                    Dashboard
                 </button>
             </div>
-        </div>
-    );
+        </Layout>
+    )
 }
