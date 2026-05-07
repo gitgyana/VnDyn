@@ -6,9 +6,13 @@
 
 ## Why This Project Exists
 
-India's street food ecosystem is massive — millions of vendors, crores of customers, and an invisible supply chain that nobody talks about. Every vendor selling chaat, dosa, or biryani has one persistent problem: **sourcing raw materials reliably and cheaply**.
+India's street food ecosystem is massive — millions of vendors, crores of customers, and an invisible supply chain that
+nobody talks about. Every vendor selling chaat, dosa, or biryani has one persistent problem: **sourcing raw materials
+reliably and cheaply**.
 
-There is no platform where a street vendor can browse available ingredients and supplies, place an order, and have it dispatched by a supplier — all in one place. Vendors rely on word of mouth, local middlemen, and physical markets with inconsistent pricing and zero accountability.
+There is no platform where a street vendor can browse available ingredients and supplies, place an order, and have it
+dispatched by a supplier — all in one place. Vendors rely on word of mouth, local middlemen, and physical markets with
+inconsistent pricing and zero accountability.
 
 **VnDyn (Vendor Dynamics)** was built to fix this. It connects three stakeholders:
 
@@ -16,7 +20,8 @@ There is no platform where a street vendor can browse available ingredients and 
 - **Retailers / Suppliers** who provide those materials
 - **Admins** who manage the platform and ensure smooth operations
 
-VnDyn gives every party their own portal with exactly the tools they need — order management, payment tracking, complaint filing, and resource browsing — all in a single web application backed by a real MongoDB database.
+VnDyn gives every party their own portal with exactly the tools they need — order management, payment tracking,
+complaint filing, and resource browsing — all in a single web application backed by a real MongoDB database.
 
 ---
 
@@ -92,6 +97,7 @@ VnDyn gives every party their own portal with exactly the tools they need — or
 ### User Journey — Step by Step
 
 **Vendor Journey:**
+
 ```
 Register → Login → Dashboard → Vendor Portal
 → Browse Resources → Add to Cart → Place Order
@@ -101,6 +107,7 @@ Register → Login → Dashboard → Vendor Portal
 ```
 
 **Supplier Journey:**
+
 ```
 Register → Login → Dashboard → Supplier Portal
 → See pending orders from vendors
@@ -110,6 +117,7 @@ Register → Login → Dashboard → Supplier Portal
 ```
 
 **Admin Journey:**
+
 ```
 Login → Dashboard → Admin Dashboard
 → Complaints tab: View all complaints, Resolve or Delete
@@ -122,7 +130,10 @@ Login → Dashboard → Admin Dashboard
 ## User Roles Explained
 
 ### Street Vendor
-A street food vendor is someone running a small food stall or cart — selling chaat, momos, dosa, or any other street food. They need raw materials like vegetables, cooking oil, plates, and napkins regularly. On VnDyn, vendors can:
+
+A street food vendor is someone running a small food stall or cart — selling chaat, momos, dosa, or any other street
+food. They need raw materials like vegetables, cooking oil, plates, and napkins regularly. On VnDyn, vendors can:
+
 - Browse all available resources listed by suppliers
 - Add items to a cart and place an order
 - Pay online through the payment modal (Card, UPI, Net Banking, COD)
@@ -130,14 +141,18 @@ A street food vendor is someone running a small food stall or cart — selling c
 - File complaints if something goes wrong
 
 ### Retailer to Vendor (Supplier)
+
 A supplier is a retailer or wholesaler who stocks raw materials and sells them to vendors. On VnDyn, suppliers can:
+
 - View all incoming orders placed by vendors
 - See full order details — which vendor, what items, delivery address, total amount
 - Approve an order (marks it as dispatched) or Reject it
 - Access the payment processing page to track payments
 
 ### Admin
+
 The admin manages the entire platform. On VnDyn, admins can:
+
 - View all complaints filed by any user and resolve or delete them
 - Add new resources/products for vendors to browse (e.g. new ingredient categories)
 - View and manage all payments across the platform
@@ -182,14 +197,15 @@ VnDyn/                          ← Root of frontend project
 
 Before you begin, make sure you have:
 
-| Tool | Version | Download |
-|------|---------|----------|
-| Node.js | v18 or higher | https://nodejs.org |
-| npm | comes with Node | — |
-| Git | any | https://git-scm.com |
-| Flask backend | running on port 3001 | See backend README |
+| Tool          | Version              | Download            |
+|---------------|----------------------|---------------------|
+| Node.js       | v18 or higher        | https://nodejs.org  |
+| npm           | comes with Node      | —                   |
+| Git           | any                  | https://git-scm.com |
+| Flask backend | running on port 3001 | See backend README  |
 
-> **Important:** The frontend talks to the Flask backend. You must start the backend first before using the frontend. See `README-backend.md` for backend setup.
+> **Important:** The frontend talks to the Flask backend. You must start the backend first before using the frontend.
+> See `README-backend.md` for backend setup.
 
 ---
 
@@ -248,10 +264,10 @@ Open **http://localhost:5173** in your browser.
 
 Use the demo accounts on the login page to instantly access each role:
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@vndyn.com | admin123 |
-| Vendor | vendor@test.com | vendor123 |
+| Role     | Email             | Password    |
+|----------|-------------------|-------------|
+| Admin    | admin@vndyn.com   | admin123    |
+| Vendor   | vendor@test.com   | vendor123   |
 | Supplier | supplier@test.com | supplier123 |
 
 Click the **"Use"** button next to any demo account on the login page to auto-fill the credentials.
@@ -296,11 +312,11 @@ Click the **"Use"** button next to any demo account on the login page to auto-fi
 
 ## Available Test Accounts
 
-| Role | Email | Phone | Password |
-|------|-------|-------|----------|
-| Admin | admin@vndyn.com | 9999999999 | admin123 |
-| Street Vendor | vendor@test.com | 8888888888 | vendor123 |
-| Supplier | supplier@test.com | 7777777777 | supplier123 |
+| Role          | Email             | Phone      | Password    |
+|---------------|-------------------|------------|-------------|
+| Admin         | admin@vndyn.com   | 9999999999 | admin123    |
+| Street Vendor | vendor@test.com   | 8888888888 | vendor123   |
+| Supplier      | supplier@test.com | 7777777777 | supplier123 |
 
 You can also register a new account using the **Sign Up** button on the home page.
 
@@ -308,42 +324,44 @@ You can also register a new account using the **Sign Up** button on the home pag
 
 ## Component Overview
 
-| Component | What It Does |
-|-----------|-------------|
-| `Home.jsx` | Landing page with animated typewriter effect cycling through user types. Has "Join as Vendor" and "Join as Retailer" buttons that go directly to signup with the role pre-selected |
-| `Login.jsx` | Email or phone-based login. Includes demo account shortcuts that auto-fill credentials with one click |
-| `Signup.jsx` | Two-step registration form. Step 1 collects account info and role selection. Step 2 collects delivery address. Both steps validate inputs before proceeding |
-| `Dashboard.jsx` | Shown after login. Displays user info, account type, address, and quick action buttons to navigate to the appropriate portal |
-| `VendorPortal.jsx` | Three-tab interface for vendors: Browse Items (with Add to Cart), Cart (with order placement), and My Orders (with status badges) |
-| `SupplierPortal.jsx` | Two-tab interface for suppliers: Pending Orders (with Approve/Reject buttons and full order details) and All Orders (history view) |
-| `Admin.jsx` | Two-tab interface for admins: Complaints management (resolve/delete) and Resource management (add new items to the catalog) |
-| `PaymentProcessing.jsx` | Shows payments filtered by status (pending/settled/rejected). Pending payments can be settled via the PaymentModal or rejected directly |
-| `PaymentModal.jsx` | Full payment flow modal with method selection (Card, UPI, Net Banking, COD), input fields, simulated processing animation, and success/failure screens |
-| `ComplaintForm.jsx` | Category-based complaint form (Order, Payment, Delivery, Product Quality, Service, Other) with character counter and confirmation redirect |
-| `AuthContext.jsx` | React context that stores the logged-in user globally so all components can access it without prop drilling |
-| `api.js` | Centralized API layer. All fetch calls to the Flask backend go through here. Makes it easy to change the backend URL in one place |
+| Component               | What It Does                                                                                                                                                                       |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Home.jsx`              | Landing page with animated typewriter effect cycling through user types. Has "Join as Vendor" and "Join as Retailer" buttons that go directly to signup with the role pre-selected |
+| `Login.jsx`             | Email or phone-based login. Includes demo account shortcuts that auto-fill credentials with one click                                                                              |
+| `Signup.jsx`            | Two-step registration form. Step 1 collects account info and role selection. Step 2 collects delivery address. Both steps validate inputs before proceeding                        |
+| `Dashboard.jsx`         | Shown after login. Displays user info, account type, address, and quick action buttons to navigate to the appropriate portal                                                       |
+| `VendorPortal.jsx`      | Three-tab interface for vendors: Browse Items (with Add to Cart), Cart (with order placement), and My Orders (with status badges)                                                  |
+| `SupplierPortal.jsx`    | Two-tab interface for suppliers: Pending Orders (with Approve/Reject buttons and full order details) and All Orders (history view)                                                 |
+| `Admin.jsx`             | Two-tab interface for admins: Complaints management (resolve/delete) and Resource management (add new items to the catalog)                                                        |
+| `PaymentProcessing.jsx` | Shows payments filtered by status (pending/settled/rejected). Pending payments can be settled via the PaymentModal or rejected directly                                            |
+| `PaymentModal.jsx`      | Full payment flow modal with method selection (Card, UPI, Net Banking, COD), input fields, simulated processing animation, and success/failure screens                             |
+| `ComplaintForm.jsx`     | Category-based complaint form (Order, Payment, Delivery, Product Quality, Service, Other) with character counter and confirmation redirect                                         |
+| `AuthContext.jsx`       | React context that stores the logged-in user globally so all components can access it without prop drilling                                                                        |
+| `api.js`                | Centralized API layer. All fetch calls to the Flask backend go through here. Makes it easy to change the backend URL in one place                                                  |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 18 |
-| Build Tool | Vite 5 |
-| Routing | React Router v6 |
-| Styling | Custom CSS (glassmorphism) |
-| Fonts | Syne + DM Sans (Google Fonts) |
-| API Communication | Fetch API (REST) |
-| State Management | React useState + Context API |
+| Layer             | Technology                    |
+|-------------------|-------------------------------|
+| Framework         | React 18                      |
+| Build Tool        | Vite 5                        |
+| Routing           | React Router v6               |
+| Styling           | Custom CSS (glassmorphism)    |
+| Fonts             | Syne + DM Sans (Google Fonts) |
+| API Communication | Fetch API (REST)              |
+| State Management  | React useState + Context API  |
 
 ---
 
 ## Hackathon Context
 
-This project was built for **a contest**, which challenged participants to solve a real problem in India's street food ecosystem. The challenge: street food vendors struggle to source raw materials from trusted and affordable suppliers.
+This project was built for **a contest**, which challenged participants to solve a real problem in India's street food
+ecosystem. The challenge: street food vendors struggle to source raw materials from trusted and affordable suppliers.
 
-VnDyn addresses this by creating a structured digital marketplace where vendors can discover suppliers, place orders, make payments, and raise issues — all without needing to leave their phone or computer.
+VnDyn addresses this by creating a structured digital marketplace where vendors can discover suppliers, place orders,
+make payments, and raise issues — all without needing to leave their phone or computer.
 
 ---
 
