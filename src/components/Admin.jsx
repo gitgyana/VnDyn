@@ -128,7 +128,7 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                 display: "flex",
                 gap: "1rem",
                 marginBottom: "2rem",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
                 paddingBottom: "1rem"
             }}>
                 <button
@@ -155,22 +155,22 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                         <div style={{ display: "grid", gap: "1rem" }}>
                             {complaints.map((complaint) => (
                                 <div key={complaint._id} style={{
-                                    background: "rgba(255, 255, 255, 0.1)",
+                                    background: "rgba(255, 255, 255, 0.05)",
                                     padding: "1.5rem",
                                     borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)"
+                                    border: "1px solid rgba(255, 255, 255, 0.1)"
                                 }}>
                                     <div style={{ marginBottom: "1rem" }}>
                                         <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
                                             {complaint.category} Complaint
                                         </h4>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             <strong>From:</strong> {complaint.partyName}
                                         </p>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             <strong>Date:</strong> {new Date(complaint.createdAt).toLocaleDateString()}
                                         </p>
-                                        <p className="text" style={{ margin: "0 0 1rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 1rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             <strong>Message:</strong> {complaint.message}
                                         </p>
                                         <span style={{
@@ -178,24 +178,24 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                                             borderRadius: "1rem",
                                             fontSize: "0.8rem",
                                             fontWeight: "bold",
-                                            background: complaint.status === "pending" ? 
-                                                "rgba(234, 179, 8, 0.2)" : 
+                                            background: complaint.status === "pending" ?
+                                                "rgba(234, 179, 8, 0.2)" :
                                                 "rgba(34, 197, 94, 0.2)",
-                                            color: complaint.status === "pending" ? 
-                                                "#eab308" : 
+                                            color: complaint.status === "pending" ?
+                                                "#eab308" :
                                                 "#22c55e"
                                         }}>
                                             {complaint.status.toUpperCase()}
                                         </span>
                                     </div>
-                                    
+
                                     {complaint.status === "pending" && (
                                         <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
                                             <button
                                                 className="btn"
                                                 onClick={() => resolveComplaint(complaint._id)}
-                                                style={{ 
-                                                    maxWidth: "120px", 
+                                                style={{
+                                                    maxWidth: "120px",
                                                     margin: 0,
                                                     background: "rgba(34, 197, 94, 0.8)"
                                                 }}
@@ -205,8 +205,8 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                                             <button
                                                 className="btn"
                                                 onClick={() => deleteComplaint(complaint._id)}
-                                                style={{ 
-                                                    maxWidth: "100px", 
+                                                style={{
+                                                    maxWidth: "100px",
                                                     margin: 0,
                                                     background: "rgba(239, 68, 68, 0.8)"
                                                 }}
@@ -219,7 +219,7 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                             ))}
                         </div>
                     ) : (
-                        <div className="text" style={{ textAlign: "center", padding: "2rem" }}>
+                        <div className="text" style={{ textAlign: "center", padding: "2rem", opacity: 0.7 }}>
                             No complaints found.
                         </div>
                     )}
@@ -230,13 +230,13 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
             {activeTab === "resources" && (
                 <div>
                     <h3 className="text">Resource Management</h3>
-                    
+
                     {/* Add New Resource Form */}
                     <div style={{
-                        background: "rgba(255, 255, 255, 0.1)",
+                        background: "rgba(255, 255, 255, 0.05)",
                         padding: "1.5rem",
                         borderRadius: "0.5rem",
-                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
                         marginBottom: "2rem"
                     }}>
                         <h4 className="text" style={{ margin: "0 0 1rem 0" }}>Add New Resource</h4>
@@ -281,9 +281,9 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                                 <option value="Equipment">Equipment</option>
                                 <option value="Supplies">Supplies</option>
                             </select>
-                            <button 
-                                type="submit" 
-                                className="btn" 
+                            <button
+                                type="submit"
+                                className="btn"
                                 style={{ maxWidth: "200px", margin: "0 auto" }}
                             >
                                 Add Resource
@@ -297,10 +297,10 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                         <div style={{ display: "grid", gap: "1rem" }}>
                             {resources.map((resource) => (
                                 <div key={resource._id} style={{
-                                    background: "rgba(255, 255, 255, 0.1)",
+                                    background: "rgba(255, 255, 255, 0.05)",
                                     padding: "1rem",
                                     borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                                    border: "1px solid rgba(255, 255, 255, 0.1)",
                                     display: "flex",
                                     justifyContent: "space-between",
                                     alignItems: "center"
@@ -309,10 +309,10 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                                         <h5 className="text" style={{ margin: "0 0 0.5rem 0" }}>
                                             {resource.name}
                                         </h5>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             {resource.description}
                                         </p>
-                                        <p className="text" style={{ margin: 0, fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: 0, fontSize: "0.9rem", color: "#4ade80" }}>
                                             <strong>₹{resource.price}</strong> | {resource.category}
                                         </p>
                                     </div>
@@ -320,16 +320,16 @@ export default function Admin({ user, onHome, onUserData, onPayments }) {
                             ))}
                         </div>
                     ) : (
-                        <p className="text">No resources found.</p>
+                        <p className="text" style={{ opacity: 0.7 }}>No resources found.</p>
                     )}
                 </div>
             )}
 
             {/* Navigation Buttons */}
-            <div style={{ 
-                marginTop: "2rem", 
-                display: "flex", 
-                gap: "1rem", 
+            <div style={{
+                marginTop: "2rem",
+                display: "flex",
+                gap: "1rem",
                 justifyContent: "center",
                 flexWrap: "wrap"
             }}>
