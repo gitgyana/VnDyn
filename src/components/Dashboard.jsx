@@ -1,182 +1,106 @@
 import {useNavigate} from 'react-router-dom'
 import {useAuth} from '../AuthContext'
-import Layout from './Layout'
-
-const ROLE_CONFIG = {
-    'Admin': {
-        color: 'var(--red)',
-        icon: '👑',
-        route: '/admin',
-        portalLabel: 'Admin Dashboard',
-        description: 'Manage complaints, resources & users'
-    },
-    'Street Vendor': {
-        color: 'var(--accent)',
-        icon: '🍜',
-        route: '/vendor',
-        portalLabel: 'Vendor Portal',
-        description: 'Browse resources and place orders'
-    },
-    'Retailer to Vendor': {
-        color: 'var(--blue)',
-        icon: '📦',
-        route: '/supplier',
-        portalLabel: 'Supplier Portal',
-        description: 'Manage incoming orders from vendors'
-    }
-}
 
 export default function Dashboard() {
-    const {user} = useAuth()
+    const {user, logout} = useAuth()
     const navigate = useNavigate()
-    const role = ROLE_CONFIG[user?.type] || ROLE_CONFIG['Street Vendor']
 
-    const quickActions = [
-        {label: role.portalLabel, icon: role.icon, desc: role.description, route: role.route, primary: true},
-        ...([user?.type === 'Admin' || user?.type === 'Retailer to Vendor'] ? [{
-            label: 'Payments',
-            icon: '💳',
-            desc: 'Process and track payments',
-            route: '/payments'
-        }] : []),
-        {label: 'File Complaint', icon: '📋', desc: 'Submit a support complaint', route: '/complaints'},
-        ...(user?.type === 'Admin' ? [{
-            label: 'Manage Resources',
-            icon: '⚙️',
-            desc: 'Add or edit resources',
-            route: '/admin'
-        }] : [])
-    ].filter(Boolean)
+    const handleLogout = () => {
+        logout();
+        navigate('/')
+    }
+
+    const handlePortal = () => {
+        if (user.type === 'Street Vendor') navigate('/vendor')
+        else if (user.type === 'Retailer to Vendor') navigate('/supplier')
+        else if (user.type === 'Admin') navigate('/admin')
+    }
+
+    const roleColor = user?.type === 'Admin' ? '#ef4444' : user?.type === 'Street Vendor' ? '#4ade80' : '#60a5fa'
 
     return (
-        <Layout title={`Welcome back, ${user?.fullName?.split(' ')[0]}`} subtitle="Here's your platform overview">
-            <div style={{display: 'grid', gap: 24}}>
+        <div id="app">
+            <h2 className="text">Welcome, {user?.fullName}!</h2>
 
-                {/* Profile card */}
-                <div className="card" style={{
-                    padding: '28px 32px',
-                    display: 'flex',
-                    gap: 24,
-                    alignItems: 'flex-start',
-                    flexWrap: 'wrap'
+            <div className="panel" style={{textAlign: 'center', marginBottom: '1.5rem'}}>
+                <table style={{
+                    width: '100%',
+                    margin: '0 auto 1.5rem',
+                    fontSize: '1rem',
+                    color: '#fff',
+                    borderCollapse: 'separate',
+                    borderSpacing: '0 0.4rem'
                 }}>
-                    <div style={{
-                        width: 64, height: 64, borderRadius: 16, flexShrink: 0,
-                        background: `color-mix(in srgb, ${role.color} 15%, transparent)`,
-                        border: `1px solid color-mix(in srgb, ${role.color} 25%, transparent)`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem'
-                    }}>
-                        {role.icon}
-                    </div>
-                    <div style={{flex: 1, minWidth: 200}}>
-                        <div
-                            style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap'}}>
-                            <h2 style={{
-                                fontFamily: 'var(--font-display)',
-                                fontWeight: 700,
-                                fontSize: '1.25rem',
-                                color: 'var(--text)'
-                            }}>
-                                {user?.fullName}
-                            </h2>
-                            <span
-                                className={`badge badge-${user?.type === 'Admin' ? 'rejected' : user?.type === 'Street Vendor' ? 'settled' : 'pending'}`}
-                                style={{
-                                    background: `color-mix(in srgb, ${role.color} 12%, transparent)`,
-                                    color: role.color,
-                                    borderColor: `color-mix(in srgb, ${role.color} 22%, transparent)`
+                    <tbody>
+                    <tr>
+                        <td style={{padding: '0.4rem', textAlign: 'left', opacity: 0.7}}><strong>Account Type:</strong>
+                        </td>
+                        <td style={{
+                            padding: '0.4rem',
+                            color: roleColor,
+                            fontWeight: 700,
+                            textAlign: 'right'
+                        }}>{user?.type}</td>
+                    </tr>
+                    <tr>
+                        <td style={{padding: '0.4rem', textAlign: 'left', opacity: 0.7}}><strong>Phone:</strong></td>
+                        <td style={{padding: '0.4rem', textAlign: 'right'}}>{user?.phone}</td>
+                    </tr>
+                    <tr>
+                        <td style={{padding: '0.4rem', textAlign: 'left', opacity: 0.7}}><strong>Email:</strong></td>
+                        <td style={{padding: '0.4rem', textAlign: 'right'}}>{user?.email}</td>
+                    </tr>
+                    {user?.address && (
+                        <>
+                            <tr>
+                                <td colSpan="2" style={{
+                                    padding: '0.75rem 0.4rem 0.4rem',
+                                    textAlign: 'left',
+                                    opacity: 0.7,
+                                    borderTop: '1px solid rgba(255,255,255,0.1)'
                                 }}>
-                {user?.type}
-              </span>
-                        </div>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                            gap: '6px 24px'
-                        }}>
-                            {[
-                                {label: 'Email', value: user?.email},
-                                {label: 'Phone', value: user?.phone},
-                                ...(user?.address ? [{label: 'City', value: user.address.city}] : [])
-                            ].map(item => (
-                                <div key={item.label} style={{fontSize: '0.875rem'}}>
-                                    <span style={{color: 'var(--text-3)'}}>{item.label}: </span>
-                                    <span style={{color: 'var(--text-2)'}}>{item.value}</span>
-                                </div>
-                            ))}
-                        </div>
-                        {user?.address && (
-                            <div style={{
-                                marginTop: 12,
-                                padding: '8px 12px',
-                                background: 'rgba(0,0,0,0.2)',
-                                borderRadius: 8,
-                                fontSize: '0.8125rem',
-                                color: 'var(--text-3)'
-                            }}>
-                                📍 {user.address.street}, {user.address.city}, {user.address.state} — {user.address.pincode}
-                                {user.address.landmark && ` · ${user.address.landmark}`}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Quick actions */}
-                <div>
-                    <h3 style={{
-                        fontFamily: 'var(--font-display)',
-                        fontWeight: 700,
-                        fontSize: '1rem',
-                        color: 'var(--text-2)',
-                        marginBottom: 16,
-                        letterSpacing: '0.04em',
-                        textTransform: 'uppercase',
-                        fontSize: '0.75rem'
-                    }}>
-                        Quick Actions
-                    </h3>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                        gap: 16
-                    }}>
-                        {quickActions.map((action, i) => (
-                            <button key={i} onClick={() => navigate(action.route)} style={{
-                                padding: '22px 24px', textAlign: 'left',
-                                background: action.primary ? `color-mix(in srgb, ${role.color} 8%, var(--surface))` : 'var(--surface)',
-                                border: `1px solid ${action.primary ? `color-mix(in srgb, ${role.color} 25%, transparent)` : 'var(--border)'}`,
-                                borderRadius: 'var(--radius-lg)', cursor: 'pointer', transition: 'all 0.2s',
-                                display: 'flex', flexDirection: 'column', gap: 10
-                            }} onMouseEnter={e => {
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.borderColor = action.primary ? `color-mix(in srgb, ${role.color} 45%, transparent)` : 'var(--border-strong)'
-                            }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.transform = '';
-                                        e.currentTarget.style.borderColor = ''
-                                    }}>
-                                <span style={{fontSize: '1.5rem'}}>{action.icon}</span>
-                                <div>
-                                    <div style={{
-                                        fontFamily: 'var(--font-display)',
-                                        fontWeight: 700,
-                                        fontSize: '1rem',
-                                        color: action.primary ? role.color : 'var(--text)',
-                                        marginBottom: 4
-                                    }}>
-                                        {action.label}
-                                    </div>
-                                    <div style={{
-                                        fontSize: '0.8125rem',
-                                        color: 'var(--text-3)',
-                                        lineHeight: 1.5
-                                    }}>{action.desc}</div>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                                    <strong>Delivery Address:</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="2"
+                                    style={{padding: '0.4rem', textAlign: 'left', fontSize: '0.9rem', opacity: 0.9}}>
+                                    {user.address.street}, {user.address.city}, {user.address.state} - {user.address.pincode}
+                                    {user.address.landmark && <div style={{
+                                        marginTop: 2,
+                                        opacity: 0.7,
+                                        fontSize: '0.85rem'
+                                    }}>Landmark: {user.address.landmark}</div>}
+                                </td>
+                            </tr>
+                        </>
+                    )}
+                    </tbody>
+                </table>
             </div>
-        </Layout>
+
+            <div style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+                <button className="btn" onClick={handlePortal} style={{
+                    background: `rgba(${roleColor === '#4ade80' ? '76,222,128' : roleColor === '#ef4444' ? '239,68,68' : '96,165,250'},0.2)`,
+                    borderColor: `${roleColor}60`
+                }}>
+                    {user?.type === 'Street Vendor' && 'Go to Vendor Portal'}
+                    {user?.type === 'Retailer to Vendor' && 'Go to Supplier Portal'}
+                    {user?.type === 'Admin' && 'Go to Admin Dashboard'}
+                </button>
+
+                {(user?.type === 'Admin' || user?.type === 'Retailer to Vendor') && (
+                    <button className="btn" onClick={() => navigate('/payments')}>Payment Processing</button>
+                )}
+
+                <button className="btn" onClick={() => navigate('/complaints')}>File Complaint</button>
+
+                {user?.type === 'Admin' && (
+                    <button className="btn" onClick={() => navigate('/admin')}>Manage Complaints and Resources</button>
+                )}
+
+                <button type="button" className="switch-link" onClick={handleLogout}>Logout</button>
+            </div>
+        </div>
     )
 }
