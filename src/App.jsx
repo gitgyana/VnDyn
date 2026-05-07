@@ -1,207 +1,60 @@
-import React, {useState, useEffect} from "react";
+import {Routes, Route, Navigate, useNavigate} from 'react-router-dom'
+import {AuthProvider, useAuth} from './AuthContext'
+import Home from './components/Home'
+import Login from './components/Login'
+import Signup from './components/Signup'
+import Dashboard from './components/Dashboard'
+import VendorPortal from './components/VendorPortal'
+import SupplierPortal from './components/SupplierPortal'
+import Admin from './components/Admin'
+import PaymentProcessing from './components/PaymentProcessing'
+import ComplaintForm from './components/ComplaintForm'
 
-import Home from "./components/Home";
-import Signup from "./components/Signup";
-import Login from "./components/Login";
-import UserData from "./components/UserData";
-import VendorPortal from "./components/VendorPortal";
-import SupplierPortal from "./components/SupplierPortal";
-import Admin from "./components/Admin";
-import PaymentProcessing from "./components/PaymentProcessing";
-import ComplaintForm from "./components/ComplaintForm";
-
-function App() {
-    const [view, setView] = useState("home");
-    const [user, setUser] = useState(null);
-    const [selectedType, setSelectedType] = useState("");
-    const [message, setMessage] = useState("");
-
-    // Check for saved user session on mount
-    useEffect(() => {
-        const savedUser = localStorage.getItem("vndyn_user");
-        if (savedUser) {
-            try {
-                const userData = JSON.parse(savedUser);
-                setUser(userData);
-                setView("userData");
-                setMessage("Welcome back!");
-                setTimeout(() => setMessage(""), 3000);
-            } catch (error) {
-                localStorage.removeItem("vndyn_user");
-            }
-        }
-    }, []);
-
-    const goHome = () => {
-        setView("home");
-        setUser(null);
-        setSelectedType("");
-        setMessage("");
-        localStorage.removeItem("vndyn_user");
-    };
-
-    const goSignup = (type) => {
-        setSelectedType(type);
-        setView("signup");
-        setMessage("");
-    };
-
-    const goLogin = () => {
-        setView("login");
-        setMessage("");
-    };
-
-    const showUserData = (userData, msg = "") => {
-        setUser(userData);
-        setMessage(msg);
-        setView("userData");
-        localStorage.setItem("vndyn_user", JSON.stringify(userData));
-    };
-
-    const goToVendorPortal = () => {
-        if (!user || user.type !== "Street Vendor") return goHome();
-        setView("vendor");
-        setMessage("");
-    };
-
-    const goToSupplierPortal = () => {
-        if (!user || user.type !== "Retailer to Vendor") return goHome();
-        setView("supplier");
-        setMessage("");
-    };
-
-    const goToAdmin = () => {
-        if (!user || user.type !== "Admin") return goHome();
-        setView("admin");
-        setMessage("");
-    };
-
-    const goToPayments = () => {
-        if (!user) return goHome();
-        setView("payments");
-        setMessage("");
-    };
-
-    const goToComplaints = () => {
-        if (!user) return goHome();
-        setView("complaints");
-        setMessage("");
-    };
-
-    const handleAuthSuccess = (userData, successMessage) => {
-        setUser(userData);
-        setMessage(successMessage);
-        setView("userData");
-        localStorage.setItem("vndyn_user", JSON.stringify(userData));
-    };
-
-    const renderCurrentView = () => {
-        switch (view) {
-            case "home":
-                return <Home onSelectType={goSignup} onLogin={goLogin}/>;
-
-            case "signup":
-                return (
-                    <Signup
-                        selectedType={selectedType}
-                        onSuccess={handleAuthSuccess}
-                        onHome={goHome}
-                        onLogin={goLogin}
-                    />
-                );
-
-            case "login":
-                return (
-                    <Login
-                        onSuccess={handleAuthSuccess}
-                        onSignup={() => setView("signup")}
-                        onHome={goHome}
-                    />
-                );
-
-            case "userData":
-                if (!user) return goHome();
-                return (
-                    <UserData
-                        user={user}
-                        message={message}
-                        onHome={goHome}
-                        onVendorPortal={goToVendorPortal}
-                        onSupplierPortal={goToSupplierPortal}
-                        onAdmin={goToAdmin}
-                        onPayments={goToPayments}
-                        onComplaints={goToComplaints}
-                    />
-                );
-
-            case "vendor":
-                if (!user || user.type !== "Street Vendor") return goHome();
-                return (
-                    <VendorPortal
-                        user={user}
-                        onHome={goHome}
-                        onUserData={() => setView("userData")}
-                        onComplaints={goToComplaints}
-                    />
-                );
-
-            case "supplier":
-                if (!user || user.type !== "Retailer to Vendor") return goHome();
-                return (
-                    <SupplierPortal
-                        user={user}
-                        onHome={goHome}
-                        onUserData={() => setView("userData")}
-                        onPayments={goToPayments}
-                    />
-                );
-
-            case "admin":
-                if (!user || user.type !== "Admin") return goHome();
-                return (
-                    <Admin
-                        user={user}
-                        onHome={goHome}
-                        onUserData={() => setView("userData")}
-                        onPayments={goToPayments}
-                    />
-                );
-
-            case "payments":
-                if (!user) return goHome();
-                return (
-                    <PaymentProcessing
-                        user={user}
-                        onHome={goHome}
-                        onUserData={() => setView("userData")}
-                        onAdmin={goToAdmin}
-                    />
-                );
-
-            case "complaints":
-                if (!user) return goHome();
-                return (
-                    <ComplaintForm
-                        user={user}
-                        onHome={goHome}
-                        onUserData={() => setView("userData")}
-                        onSuccess={(msg) => {
-                            setMessage(msg);
-                            setView("userData");
-                        }}
-                    />
-                );
-
-            default:
-                return <Home onSelectType={goSignup}/>;
-        }
-    };
-
-    return (
-        <div className="app-container">
-            {renderCurrentView()}
-        </div>
-    );
+function ProtectedRoute({children, allowedTypes}) {
+    const {user} = useAuth()
+    if (!user) return <Navigate to="/login" replace/>
+    if (allowedTypes && !allowedTypes.includes(user.type)) return <Navigate to="/dashboard" replace/>
+    return children
 }
 
-export default App;
+function AppRoutes() {
+    const {user} = useAuth()
+
+    return (
+        <Routes>
+            <Route path="/" element={user ? <Navigate to="/dashboard" replace/> : <Home/>}/>
+            <Route path="/login" element={user ? <Navigate to="/dashboard" replace/> : <Login/>}/>
+            <Route path="/signup" element={user ? <Navigate to="/dashboard" replace/> : <Signup/>}/>
+            <Route path="/signup/:type" element={user ? <Navigate to="/dashboard" replace/> : <Signup/>}/>
+
+            <Route path="/dashboard" element={
+                <ProtectedRoute><Dashboard/></ProtectedRoute>
+            }/>
+            <Route path="/vendor" element={
+                <ProtectedRoute allowedTypes={["Street Vendor"]}><VendorPortal/></ProtectedRoute>
+            }/>
+            <Route path="/supplier" element={
+                <ProtectedRoute allowedTypes={["Retailer to Vendor"]}><SupplierPortal/></ProtectedRoute>
+            }/>
+            <Route path="/admin" element={
+                <ProtectedRoute allowedTypes={["Admin"]}><Admin/></ProtectedRoute>
+            }/>
+            <Route path="/payments" element={
+                <ProtectedRoute><PaymentProcessing/></ProtectedRoute>
+            }/>
+            <Route path="/complaints" element={
+                <ProtectedRoute><ComplaintForm/></ProtectedRoute>
+            }/>
+
+            <Route path="*" element={<Navigate to="/" replace/>}/>
+        </Routes>
+    )
+}
+
+export default function App() {
+    return (
+        <AuthProvider>
+            <AppRoutes/>
+        </AuthProvider>
+    )
+}
