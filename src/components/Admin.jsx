@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { complaintAPI, resourceAPI, generateObjectId } from "../mongoAPI";
+import { complaintAPI, resourceAPI, generateObjectId } from "../api.js";
 
 export default function Admin({ user, onHome, onUserData, onPayments }) {
     const [complaints, setComplaints] = useState([]);

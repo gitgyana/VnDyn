@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { paymentAPI } from "../mongoAPI";
+import { paymentAPI } from "../api.js";
 import PaymentModal from "./PaymentModal";
 
 export default function PaymentProcessing({ user, onHome, onUserData, onAdmin }) {

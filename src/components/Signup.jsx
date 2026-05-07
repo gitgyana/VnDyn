@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { userAPI } from "../mongoAPI";
+import { userAPI } from "../api.js";
 
 export default function Signup({ selectedType, onSuccess, onHome, onLogin }) {
     const [form, setForm] = useState({

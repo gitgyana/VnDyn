@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { resourceAPI, orderAPI, generateObjectId } from "../mongoAPI";
+import { resourceAPI, orderAPI, generateObjectId } from "../api.js";
 import PaymentModal from "./PaymentModal";
 
 export default function VendorPortal({ user, onHome, onUserData, onComplaints }) {

@@ -121,7 +121,7 @@ Use these for quick login or signup to test different roles.
 ## Component Overview
 
 - **Home.jsx:** Landing page with animated “VnDyn” title and role selection buttons (Vendor or Retailer).  
-- **Signup.jsx:** Collects fullname, phone, email, password, and user type. Validates inputs and registers user in `mongoAPI.js`.  
+- **Signup.jsx:** Collects fullname, phone, email, password, and user type. Validates inputs and registers user in `api.js`.  
 - **Login.jsx:** Authenticates user credentials against in-memory data.  
 - **UserData.jsx:** Displays user info and navigation links to role-specific portals or admin tools.  
 - **VendorPortal.jsx:** Vendors browse and add resources to cart and place orders.  

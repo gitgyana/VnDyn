@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { complaintAPI } from "../mongoAPI";
+import { complaintAPI } from "../api.js";
 
 export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
     const [category, setCategory] = useState("Order");

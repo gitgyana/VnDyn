@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { orderAPI } from "../mongoAPI";
+import { orderAPI } from "../api.js";
 
 export default function SupplierPortal({ user, onHome, onUserData, onPayments }) {
     const [pendingOrders, setPendingOrders] = useState([]);
