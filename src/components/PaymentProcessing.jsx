@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { paymentAPI } from "../mongoAPI";
+import PaymentModal from "./PaymentModal";
 
 export default function PaymentProcessing({ user, onHome, onUserData, onAdmin }) {
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
     const [filter, setFilter] = useState("pending");
+    const [selectedPayment, setSelectedPayment] = useState(null);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
     useEffect(() => {
         fetchPayments();
@@ -22,14 +25,29 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
         }
     };
 
-    const settlePayment = async (paymentId) => {
+    const handleSettleClick = (payment) => {
+        setSelectedPayment(payment);
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentSuccess = async (paymentDetails) => {
         try {
-            await paymentAPI.updateStatus(paymentId, 'settled');
+            await paymentAPI.processPayment(
+                selectedPayment._id,
+                paymentDetails.paymentMethod,
+                {
+                    lastFour: paymentDetails.lastFour,
+                    holderName: paymentDetails.holderName
+                }
+            );
             setMessage("Payment settled successfully!");
+            setShowPaymentModal(false);
+            setSelectedPayment(null);
             setTimeout(() => setMessage(""), 3000);
             fetchPayments();
         } catch (error) {
             setMessage("Failed to settle payment: " + error.message);
+            setShowPaymentModal(false);
         }
     };
 
@@ -48,6 +66,17 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
 
     const calculateTotalAmount = () => {
         return payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+    };
+
+    const getPaymentMethodDisplay = (payment) => {
+        if (!payment.paymentMethod) return "Not paid yet";
+        const methods = {
+            card: "💳 Card",
+            upi: "📱 UPI",
+            netbanking: "🏦 Net Banking",
+            cod: "💵 Cash on Delivery"
+        };
+        return methods[payment.paymentMethod] || payment.paymentMethod;
     };
 
     if (loading) {
@@ -112,10 +141,10 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
             {/* Summary Stats */}
             {payments.length > 0 && (
                 <div style={{
-                    background: "rgba(255, 255, 255, 0.1)",
+                    background: "rgba(255, 255, 255, 0.05)",
                     padding: "1rem",
                     borderRadius: "0.5rem",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
                     marginBottom: "2rem",
                     textAlign: "center"
                 }}>
@@ -123,7 +152,7 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                         {filter.charAt(0).toUpperCase() + filter.slice(1)} Payments Summary
                     </h3>
                     <p className="text" style={{ margin: 0 }}>
-                        <strong>Total:</strong> {payments.length} payments | 
+                        <strong>Total:</strong> {payments.length} payments |
                         <strong> Amount:</strong> ₹{calculateTotalAmount()}
                     </p>
                 </div>
@@ -134,14 +163,14 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                 <div style={{ display: "grid", gap: "1rem" }}>
                     {payments.map((payment) => (
                         <div key={payment._id} style={{
-                            background: "rgba(255, 255, 255, 0.1)",
+                            background: "rgba(255, 255, 255, 0.05)",
                             padding: "1.5rem",
                             borderRadius: "0.5rem",
-                            border: "1px solid rgba(255, 255, 255, 0.2)"
+                            border: "1px solid rgba(255, 255, 255, 0.1)"
                         }}>
-                            <div style={{ 
-                                display: "flex", 
-                                justifyContent: "space-between", 
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
                                 alignItems: "flex-start",
                                 marginBottom: "1rem"
                             }}>
@@ -150,7 +179,7 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                                         Payment #{payment._id.slice(-8)}
                                     </h4>
                                     <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                        <strong>Order ID:</strong> #{payment.orderId.slice(-8)}
+                                        <strong>Order ID:</strong> #{payment.orderId?.slice(-8)}
                                     </p>
                                     <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
                                         <strong>Vendor:</strong> {payment.vendorName}
@@ -161,55 +190,73 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                                     <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
                                         <strong>Date:</strong> {new Date(payment.createdAt).toLocaleDateString()}
                                     </p>
-                                    <p className="text" style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold" }}>
+                                    {payment.status === "settled" && (
+                                        <>
+                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                                <strong>Method:</strong> {getPaymentMethodDisplay(payment)}
+                                            </p>
+                                            {payment.transactionId && (
+                                                <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.85rem", opacity: 0.8 }}>
+                                                    <strong>Transaction:</strong> {payment.transactionId}
+                                                </p>
+                                            )}
+                                            {payment.paidAt && (
+                                                <p className="text" style={{ margin: 0, fontSize: "0.85rem", opacity: 0.8 }}>
+                                                    <strong>Paid on:</strong> {new Date(payment.paidAt).toLocaleString()}
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
+                                    <p className="text" style={{ margin: "0.5rem 0 0 0", fontSize: "1.1rem", fontWeight: "bold" }}>
                                         <strong>Amount:</strong> ₹{payment.amount}
                                     </p>
                                 </div>
-                                
+
                                 <span style={{
                                     padding: "0.5rem 1rem",
                                     borderRadius: "1rem",
                                     fontSize: "0.8rem",
                                     fontWeight: "bold",
-                                    background: payment.status === "pending" ? 
-                                        "rgba(234, 179, 8, 0.2)" : 
-                                        payment.status === "settled" ? 
-                                        "rgba(34, 197, 94, 0.2)" : 
-                                        "rgba(239, 68, 68, 0.2)",
-                                    color: payment.status === "pending" ? 
-                                        "#eab308" : 
-                                        payment.status === "settled" ? 
-                                        "#22c55e" : 
-                                        "#ef4444"
+                                    background: payment.status === "pending" ?
+                                        "rgba(234, 179, 8, 0.2)" :
+                                        payment.status === "settled" ?
+                                            "rgba(34, 197, 94, 0.2)" :
+                                            "rgba(239, 68, 68, 0.2)",
+                                    color: payment.status === "pending" ?
+                                        "#eab308" :
+                                        payment.status === "settled" ?
+                                            "#22c55e" :
+                                            "#ef4444"
                                 }}>
                                     {payment.status.toUpperCase()}
                                 </span>
                             </div>
-                            
+
                             {payment.status === "pending" && (
-                                <div style={{ 
-                                    display: "flex", 
-                                    gap: "1rem", 
+                                <div style={{
+                                    display: "flex",
+                                    gap: "1rem",
                                     justifyContent: "center",
                                     borderTop: "1px solid rgba(255, 255, 255, 0.1)",
                                     paddingTop: "1rem"
                                 }}>
                                     <button
                                         className="btn"
-                                        onClick={() => settlePayment(payment._id)}
-                                        style={{ 
-                                            maxWidth: "140px", 
+                                        onClick={() => handleSettleClick(payment)}
+                                        style={{
+                                            maxWidth: "180px",
                                             margin: 0,
-                                            background: "rgba(34, 197, 94, 0.8)"
+                                            background: "linear-gradient(45deg, #00d4ff, #00ff95)",
+                                            color: "#000"
                                         }}
                                     >
-                                        Settle Payment
+                                        💳 Pay Now
                                     </button>
                                     <button
                                         className="btn"
                                         onClick={() => rejectPayment(payment._id)}
-                                        style={{ 
-                                            maxWidth: "120px", 
+                                        style={{
+                                            maxWidth: "120px",
                                             margin: 0,
                                             background: "rgba(239, 68, 68, 0.8)"
                                         }}
@@ -223,10 +270,10 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                 </div>
             ) : (
                 <div style={{
-                    background: "rgba(255, 255, 255, 0.1)",
+                    background: "rgba(255, 255, 255, 0.05)",
                     padding: "2rem",
                     borderRadius: "0.5rem",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
                     textAlign: "center"
                 }}>
                     <p className="text" style={{ margin: 0, fontSize: "1.1rem" }}>
@@ -236,10 +283,10 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
             )}
 
             {/* Navigation Buttons */}
-            <div style={{ 
-                marginTop: "2rem", 
-                display: "flex", 
-                gap: "1rem", 
+            <div style={{
+                marginTop: "2rem",
+                display: "flex",
+                gap: "1rem",
                 justifyContent: "center",
                 flexWrap: "wrap"
             }}>
@@ -255,6 +302,18 @@ export default function PaymentProcessing({ user, onHome, onUserData, onAdmin })
                     Logout
                 </button>
             </div>
+
+            {/* Payment Modal */}
+            {showPaymentModal && selectedPayment && (
+                <PaymentModal
+                    payment={selectedPayment}
+                    onClose={() => {
+                        setShowPaymentModal(false);
+                        setSelectedPayment(null);
+                    }}
+                    onSuccess={handlePaymentSuccess}
+                />
+            )}
         </div>
     );
 }
