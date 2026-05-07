@@ -1,188 +1,130 @@
-import React, { useState } from "react";
-import { complaintAPI } from "../api.js";
+import {useState} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useAuth} from '../AuthContext'
+import {complaintAPI} from '../api'
+import Layout from './Layout'
 
-export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
-    const [category, setCategory] = useState("Order");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+export default function ComplaintForm() {
+    const {user} = useAuth()
+    const navigate = useNavigate()
+    const [category, setCategory] = useState('Order')
+    const [message, setMessage] = useState('')
+    const [error, setError] = useState('')
+    const [success, setSuccess] = useState(false)
+    const [loading, setLoading] = useState(false)
+
+    const CATEGORIES = ['Order', 'Payment', 'Delivery', 'Product Quality', 'Service', 'Other']
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault()
         if (!message.trim()) {
-            setError("Please enter complaint details");
-            return;
+            setError('Please describe your issue');
+            return
         }
-
         setLoading(true);
+        setError('')
         try {
-            const complaintData = {
+            await complaintAPI.submit({
                 partyId: user.email,
                 partyName: user.fullName,
                 category,
                 message: message.trim()
-            };
-
-            await complaintAPI.submit(complaintData);
-            setMessage("");
-            setError("");
-
-            if (onSuccess) {
-                onSuccess("Complaint submitted successfully!");
-            } else {
-                setError("");
-                alert("Complaint submitted successfully!");
-                setMessage("");
-            }
-        } catch (error) {
-            console.error(error);
-            setError("Could not submit complaint. Please try again.");
+            })
+            setSuccess(true)
+            setTimeout(() => navigate('/dashboard'), 2000)
+        } catch (err) {
+            setError('Could not submit. Please try again.')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
+
+    if (success) {
+        return (
+            <Layout title="Complaint Filed">
+                <div style={{maxWidth: 480, margin: '40px auto', textAlign: 'center'}}>
+                    <div style={{fontSize: '3rem', marginBottom: 20}}>✅</div>
+                    <h2 style={{fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: 12}}>Complaint
+                        Submitted</h2>
+                    <p style={{color: 'var(--text-2)'}}>Our team will review your complaint shortly. Redirecting to
+                        dashboard...</p>
+                </div>
+            </Layout>
+        )
+    }
 
     return (
-        <div id="app">
-            <h2 className="text">Lodge a Complaint</h2>
+        <Layout title="Lodge a Complaint" subtitle="Submit your issue and our team will get back to you">
+            <div style={{maxWidth: 560}}>
+                <div className="card" style={{padding: '32px 28px'}}>
+                    {error && <div className="alert alert-error">{error}</div>}
 
-            <div style={{
-                background: "rgba(255, 255, 255, 0.05)",
-                padding: "2rem",
-                borderRadius: "1rem",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)"
-            }}>
-                <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1.5rem" }}>
-                    <div>
-                        <label className="text" style={{
-                            display: "block",
-                            marginBottom: "0.5rem",
-                            fontWeight: "bold"
-                        }}>
-                            Complaint Category:
-                        </label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            style={{ width: "100%", maxWidth: "400px" }}
-                            disabled={loading}
-                        >
-                            <option value="Order">Order Issue</option>
-                            <option value="Payment">Payment Issue</option>
-                            <option value="Delivery">Delivery Issue</option>
-                            <option value="Product Quality">Product Quality</option>
-                            <option value="Service">Service Issue</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="text" style={{
-                            display: "block",
-                            marginBottom: "0.5rem",
-                            fontWeight: "bold"
-                        }}>
-                            Describe your issue:
-                        </label>
-                        <textarea
-                            rows="6"
-                            placeholder="Please provide detailed information about your complaint..."
-                            style={{
-                                width: "100%",
-                                maxWidth: "400px",
-                                padding: "1rem",
-                                borderRadius: "0.5rem",
-                                border: "1px solid rgba(255, 255, 255, 0.1)",
-                                background: "rgba(0, 0, 0, 0.2)",
-                                color: "#fff",
-                                fontSize: "1rem",
-                                resize: "vertical",
-                                minHeight: "120px"
-                            }}
-                            value={message}
-                            onChange={(e) => {
-                                setMessage(e.target.value);
-                                setError("");
-                            }}
-                            disabled={loading}
-                            required
-                        />
-                    </div>
-
-                    {error && (
+                    {/* Filed by */}
+                    <div style={{
+                        padding: '14px 16px',
+                        background: 'rgba(0,0,0,0.2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius)',
+                        marginBottom: 24
+                    }}>
                         <div style={{
-                            color: "#ef4444",
-                            background: "rgba(239, 68, 68, 0.1)",
-                            padding: "0.75rem",
-                            borderRadius: "0.5rem",
-                            border: "1px solid rgba(239, 68, 68, 0.3)",
-                            textAlign: "center"
-                        }}>
-                            {error}
+                            fontSize: '0.75rem',
+                            color: 'var(--text-3)',
+                            marginBottom: 6,
+                            fontWeight: 600,
+                            letterSpacing: '0.04em'
+                        }}>FILING AS
                         </div>
-                    )}
+                        <div style={{fontWeight: 600, color: 'var(--text)', marginBottom: 2}}>{user?.fullName}</div>
+                        <div style={{fontSize: '0.8125rem', color: 'var(--text-3)'}}>{user?.type} · {user?.email}</div>
+                    </div>
 
-                    <button
-                        className="btn"
-                        type="submit"
-                        disabled={loading || !message.trim()}
-                        style={{
-                            maxWidth: "200px",
-                            margin: "0 auto",
-                            opacity: loading || !message.trim() ? 0.6 : 1
-                        }}
-                    >
-                        {loading ? "Submitting..." : "Submit Complaint"}
-                    </button>
-                </form>
+                    <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: 20}}>
+                        <div className="field" style={{marginBottom: 0}}>
+                            <label className="label">Complaint Category</label>
+                            <select className="input" value={category} onChange={e => setCategory(e.target.value)}
+                                    disabled={loading}>
+                                {CATEGORIES.map(c => <option key={c}
+                                                             value={c}>{c === 'Other' ? 'Other' : c + ' Issue'}</option>)}
+                            </select>
+                        </div>
 
-                {/* User Info Display */}
-                <div style={{
-                    marginTop: "2rem",
-                    padding: "1rem",
-                    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-                    background: "rgba(0,0,0,0.2)",
-                    borderRadius: "0.5rem"
-                }}>
-                    <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                        Complaint will be filed by:
-                    </h4>
-                    <p className="text" style={{ margin: "0 0 0.25rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                        <strong>Name:</strong> {user.fullName}
-                    </p>
-                    <p className="text" style={{ margin: "0 0 0.25rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                        <strong>Type:</strong> {user.type}
-                    </p>
-                    <p className="text" style={{ margin: 0, fontSize: "0.9rem", opacity: 0.8 }}>
-                        <strong>Email:</strong> {user.email}
-                    </p>
+                        <div className="field" style={{marginBottom: 0}}>
+                            <label className="label">Describe your issue</label>
+                            <textarea
+                                className="input"
+                                rows={6}
+                                placeholder="Please provide detailed information about your complaint, including any relevant order IDs, dates, or other context..."
+                                value={message}
+                                onChange={e => {
+                                    setMessage(e.target.value);
+                                    setError('')
+                                }}
+                                disabled={loading}
+                                required
+                                style={{minHeight: 140}}
+                            />
+                            <div style={{fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 6}}>
+                                {message.length}/500 characters
+                            </div>
+                        </div>
+
+                        <div style={{display: 'flex', gap: 12}}>
+                            <button type="button" className="btn-ghost" onClick={() => navigate(-1)} disabled={loading}
+                                    style={{flex: 1}}>
+                                Cancel
+                            </button>
+                            <button type="submit" className="btn-primary" disabled={loading || !message.trim()}
+                                    style={{flex: 2, padding: '14px'}}>
+                                {loading ? <><span className="spinner" style={{
+                                    width: 16,
+                                    height: 16
+                                }}/> Submitting...</> : 'Submit Complaint'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            {/* Navigation Buttons */}
-            <div style={{
-                marginTop: "2rem",
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                flexWrap: "wrap"
-            }}>
-                <button
-                    className="switch-link"
-                    onClick={onUserData}
-                    disabled={loading}
-                >
-                    Back to Dashboard
-                </button>
-                <button
-                    className="switch-link"
-                    onClick={onHome}
-                    disabled={loading}
-                >
-                    Logout
-                </button>
-            </div>
-        </div>
-    );
+        </Layout>
+    )
 }
