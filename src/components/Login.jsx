@@ -13,7 +13,6 @@ export default function Login({ onSuccess, onSignup, onHome }) {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phonePattern = /^[0-9]{10,15}$/;
 
-
         if (!value || !password) {
             setError("Fill all fields!");
             return;
@@ -38,7 +37,7 @@ export default function Login({ onSuccess, onSignup, onHome }) {
 
     return (
         <div id="app">
-            <h2>Login</h2>
+            <h2 style={{ color: "#fff" }}>Login</h2>
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
@@ -76,9 +75,9 @@ export default function Login({ onSuccess, onSignup, onHome }) {
                     Don't have an account? Sign up
                 </button>
             </form>
-            <button 
-                type="button" 
-                className="switch-link" 
+            <button
+                type="button"
+                className="switch-link"
                 onClick={onHome}
                 disabled={loading}
             >
