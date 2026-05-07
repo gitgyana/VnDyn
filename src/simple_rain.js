@@ -1,4 +1,3 @@
-
 class SimpleRain {
     constructor() {
         this.canvas = document.createElement('canvas');
@@ -7,14 +6,14 @@ class SimpleRain {
         this.mouse = {x: 0, y: 0};
 
         this.canvas.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    z-index: -1;
-                    pointer-events: none;
-                `;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        `;
 
         document.body.appendChild(this.canvas);
         this.resize();
