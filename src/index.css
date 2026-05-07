@@ -1,11 +1,13 @@
 :root {
-  --primary-color: #2d3436;
-  --glass-bg: rgba(255, 255, 255, 0.2);
-  --glass-border: rgba(255, 255, 255, 0.3);
-  --text-primary: #2d3436;
+  --primary-color: #0f0f1a;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
   --text-light: #ffffff;
-  --text-secondary: #dfe6e9;
-  --error-color: #dc2626;
+  --text-secondary: #a0a0b0;
+  --error-color: #ef4444;
+  --success-color: #4ade80;
+  --warning-color: #eab308;
 
   /* Spacing Scale */
   --space-xs: 0.5rem;
@@ -32,7 +34,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  font-family: Monospaced, monospace;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -45,10 +47,11 @@ body {
   background-size: cover;
   margin: 0;
   padding: 0;
-  min-height: 100svh; /* Use small viewport height for mobile compatibility */
+  min-height: 100svh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
 }
 
 /* Background Video */
@@ -74,7 +77,7 @@ body {
   padding: clamp(1rem, 4vw, 2rem);
   border-radius: var(--radius-xl);
   box-shadow:
-          0 8px 32px rgba(0, 0, 0, 0.1),
+          0 8px 32px rgba(0, 0, 0, 0.3),
           0 0 0 1px rgba(255, 255, 255, 0.05);
   position: relative;
   z-index: 1;
@@ -96,6 +99,10 @@ h2 {
   font-size: var(--font-lg);
 }
 
+h3, h4, h5 {
+  color: var(--text-primary);
+}
+
 /* Title Animations */
 #title {
   transition: opacity 0.7s ease-in-out;
@@ -110,7 +117,6 @@ h2 {
 .btn {
   display: block;
   width: 100%;
-  /* max-width: 400px; */
   margin: var(--space-md) auto;
   padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
 
@@ -145,11 +151,11 @@ h2 {
 
 .btn:hover,
 .btn:focus {
-  background: rgba(43, 45, 48, 0.8);
+  background: rgba(76, 222, 128, 0.15);
   transform: translateY(-1px);
   box-shadow:
-          0 4px 20px rgba(0, 0, 0, 0.15),
-          0 0 0 2px rgba(255, 255, 255, 0.1);
+          0 4px 20px rgba(0, 0, 0, 0.2),
+          0 0 0 2px rgba(76, 222, 128, 0.2);
   outline: none;
 }
 
@@ -163,17 +169,18 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="tel"],
-select {
+input[type="number"],
+select,
+textarea {
   width: 100%;
-  /* max-width: 400px; */
   margin: var(--space-sm) auto var(--space-md) auto;
   padding: clamp(0.75rem, 3vw, 1rem);
 
-  /* Glass morphism styling */
-  /* background: var(--glass-bg); */
+  /* Dark glass styling */
+  background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
 
   /* Typography */
@@ -192,31 +199,40 @@ select {
 input:hover,
 input:focus,
 select:hover,
-select:focus {
+select:focus,
+textarea:hover,
+textarea:focus {
   border-radius: var(--radius-xl);
-  border-color: var(--glass-border);
-  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(76, 222, 128, 0.4);
+  background: rgba(0, 0, 0, 0.3);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(76, 222, 128, 0.15);
 }
 
-input::placeholder {
-  color: rgba(45, 52, 54, 0.6);
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
   opacity: 1;
 }
 
 /* Select Dropdown Styling */
 select {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23333' d='M8 12L3 7h10l-5 5z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M8 12L3 7h10l-5 5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 16px;
   padding-right: 3rem;
+  color: var(--text-primary);
+}
+
+select option {
+  background: #1a1a2e;
+  color: #fff;
 }
 
 /* Links and Secondary Actions */
 .switch-link {
-  color: var(--text-primary);
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -234,7 +250,7 @@ select {
 
 .switch-link:hover,
 .switch-link:focus {
-  color: var(--text-secondary);
+  color: var(--text-light);
   outline: none;
   text-decoration: none;
 }
@@ -246,6 +262,10 @@ select {
   text-align: center;
   font-size: var(--font-sm);
   font-weight: 500;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* Text Elements */
@@ -281,7 +301,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
+  input[type="number"],
+  select,
+  textarea {
     padding: 1rem;
     margin: 0.5rem auto 1rem auto;
     font-size: 1rem;
@@ -313,7 +335,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
+  input[type="number"],
+  select,
+  textarea {
     padding: 0.875rem;
     margin: 0.75rem auto 1rem auto;
   }
@@ -336,7 +360,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
+  input[type="number"],
+  select,
+  textarea {
     max-width: 350px;
     padding: 1rem;
   }
@@ -351,7 +377,6 @@ select {
   }
 
   .btn {
-    /* max-width: 400px; */
     padding: 1rem 2rem;
   }
 
@@ -359,8 +384,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
-    /* max-width: 400px; */
+  input[type="number"],
+  select,
+  textarea {
     padding: 1rem;
   }
 }
@@ -374,7 +400,6 @@ select {
   }
 
   .btn {
-    /* max-width: 400px; */
     padding: 1rem 2rem;
     margin: 1.5rem auto;
   }
@@ -383,8 +408,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
-    /* max-width: 400px; */
+  input[type="number"],
+  select,
+  textarea {
     padding: 1rem;
     margin: 1rem auto 1.5rem auto;
   }
@@ -408,8 +434,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
-    /* max-width: 450px; */
+  input[type="number"],
+  select,
+  textarea {
     padding: 1.25rem;
     margin: 10px auto 10px auto;
   }
@@ -432,7 +459,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
+  input[type="number"],
+  select,
+  textarea {
     padding: clamp(0.875rem, 4vw, 1.25rem);
   }
 }
@@ -440,7 +469,7 @@ select {
 /* Landscape Orientation Adjustments */
 @media screen and (orientation: landscape) {
   body {
-    min-height: 100lvh; /* Large viewport height for landscape */
+    min-height: 100lvh;
   }
 
   #app {
@@ -458,7 +487,7 @@ select {
 /* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
   .btn {
-    min-height: 48px; /* iOS/Android minimum touch target */
+    min-height: 48px;
     padding: 1rem;
   }
 
@@ -466,7 +495,9 @@ select {
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
+  input[type="number"],
+  select,
+  textarea {
     min-height: 48px;
     padding: 1rem;
   }
@@ -484,7 +515,7 @@ select {
   /* Add active state for better touch feedback */
   .btn:active {
     transform: scale(0.98);
-    background: rgba(43, 45, 48, 0.9);
+    background: rgba(76, 222, 128, 0.2);
   }
 }
 
@@ -507,16 +538,6 @@ select {
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --glass-bg: rgba(0, 0, 0, 0.3);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --text-primary: #ffffff;
-    --text-secondary: #cccccc;
-  }
-}
-
 /* Print Styles */
 @media print {
   #bg-video,
@@ -525,17 +546,17 @@ select {
   }
 
   #app {
-    background: white;
+    background: #0f0f1a;
     backdrop-filter: none;
     box-shadow: none;
-    border: 1px solid #000;
+    border: 1px solid rgba(255,255,255,0.1);
     margin: 0;
     padding: 1rem;
   }
 
   body {
-    background: white;
-    color: black;
+    background: #0f0f1a;
+    color: white;
   }
 }
 
@@ -564,20 +585,23 @@ select {
 /* Modern CSS Grid Fallback for Older Browsers */
 @supports not (backdrop-filter: blur(10px)) {
   #app {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(15, 15, 26, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .btn {
-    background: rgba(59, 130, 246, 0.9);
+    background: rgba(76, 222, 128, 0.2);
   }
 
   input[type="text"],
   input[type="email"],
   input[type="password"],
   input[type="tel"],
-  select {
-    background: rgba(255, 255, 255, 0.9);
+  input[type="number"],
+  select,
+  textarea {
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
   }
 }
 
@@ -587,121 +611,142 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="tel"],
-select {
+input[type="number"],
+select,
+textarea {
   will-change: transform;
   contain: layout style;
 }
 
 /* ===== Landing Container ===== */
 .landing-container {
-    position: relative;
-    min-height: 100vh;
-    overflow: hidden;
-    color: white;
-    font-family: 'Segoe UI', sans-serif;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 /* ===== Background Video ===== */
 .background-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -2;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
 }
 
 /* ===== Dark Overlay ===== */
 .content-overlay {
-    position: relative;
-    z-index: 2;
-    min-height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    flex-direction: column;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===== Top Nav ===== */
 .top-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 50px;
 }
 
 .logo {
-    font-size: 22px;
-    font-weight: bold;
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
 }
 
 .nav-btn {
-    margin-left: 15px;
-    padding: 8px 18px;
-    border-radius: 20px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
+  margin-left: 15px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 /* ===== Hero ===== */
 .hero-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
 }
 
 .hero-section h1 {
-    font-size: 70px;
-    transition: 0.3s ease;
+  font-size: 70px;
+  transition: 0.3s ease;
+  color: #fff;
 }
 
 .subtitle {
-    font-size: 18px;
-    opacity: 0.9;
+  font-size: 18px;
+  opacity: 0.9;
+  color: rgba(255,255,255,0.8);
 }
 
 /* ===== Buttons ===== */
 .button-group {
-    display: flex;
-    gap: 25px;
-    margin-top: 20px;
-}
-
-.btn {
-    padding: 12px 28px;
-    border-radius: 30px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
+  display: flex;
+  gap: 25px;
+  margin-top: 20px;
 }
 
 .primary-btn {
-    background: linear-gradient(45deg, #00d4ff, #00ff95);
-    color: black;
+  background: linear-gradient(45deg, #00d4ff, #00ff95);
+  color: black;
 }
 
 .secondary-btn {
-    background: white;
-    color: black;
+  background: rgba(255,255,255,0.9);
+  color: black;
 }
 
 .btn:hover {
-    transform: translateY(-3px);
+  transform: translateY(-3px);
 }
 
 /* ===== Title Animation ===== */
 .fade-in {
-    animation: fade 0.4s ease-in-out;
+  animation: fade 0.4s ease-in-out;
 }
 
 @keyframes fade {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar Styling for Dark Mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
