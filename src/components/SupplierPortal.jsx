@@ -2,10 +2,9 @@ import {useState, useEffect} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {useAuth} from '../AuthContext'
 import {orderAPI} from '../api'
-import Layout from './Layout'
 
 export default function SupplierPortal() {
-    const {user} = useAuth()
+    const {user, logout} = useAuth()
     const navigate = useNavigate()
     const [pending, setPending] = useState([])
     const [all, setAll] = useState([])
@@ -22,9 +21,9 @@ export default function SupplierPortal() {
             const [p, a, r] = await Promise.all([
                 orderAPI.getByStatus('pending'),
                 orderAPI.getByStatus('approved'),
-                orderAPI.getByStatus('rejected')
+                orderAPI.getByStatus('rejected'),
             ])
-            setPending(p);
+            setPending(p)
             setAll([...p, ...a, ...r].sort((x, y) => new Date(y.createdAt) - new Date(x.createdAt)))
         } catch (e) {
             setMsg('Failed to load orders')
@@ -44,7 +43,7 @@ export default function SupplierPortal() {
                 approvedBy: user.fullName,
                 approvedAt: new Date().toISOString()
             })
-            notify('Order approved and dispatched!');
+            notify('Order approved and dispatched!')
             fetchOrders()
         } catch (e) {
             notify('Failed: ' + e.message)
@@ -52,117 +51,102 @@ export default function SupplierPortal() {
     }
 
     const reject = async (id) => {
-        if (!confirm('Reject this order?')) return
+        if (!window.confirm('Reject this order?')) return
         try {
             await orderAPI.updateStatus(id, 'rejected', {
                 rejectedBy: user.fullName,
                 rejectedAt: new Date().toISOString()
             })
-            notify('Order rejected.');
+            notify('Order rejected.')
             fetchOrders()
         } catch (e) {
             notify('Failed: ' + e.message)
         }
     }
 
-    const STATUS_BADGE = {pending: 'badge-pending', approved: 'badge-settled', rejected: 'badge-rejected'}
+    const handleLogout = () => {
+        logout();
+        navigate('/')
+    }
 
-    if (loading) return <Layout title="Supplier Portal">
-        <div style={{textAlign: 'center', padding: 60}}><span className="spinner"/></div>
-    </Layout>
+    if (loading) return (
+        <div id="app">
+            <div className="text" style={{textAlign: 'center', padding: '2rem'}}>
+                <span className="spinner"/> Loading orders...
+            </div>
+        </div>
+    )
 
     return (
-        <Layout title="Supplier Portal" subtitle={`Manage incoming vendor orders · ${user.fullName}`}>
-            {msg && <div className="alert alert-success">{msg}</div>}
+        <div id="app">
+            <h2 className="text">Supplier Portal - {user.fullName}</h2>
+
+            {msg && <div className="success-msg">{msg}</div>}
 
             <div className="tab-bar">
-                <button className={`tab ${tab === 'pending' ? 'active' : ''}`} onClick={() => setTab('pending')}>
-                    Pending {pending.length > 0 && <span style={{
-                    background: 'var(--amber)',
-                    color: '#000',
-                    borderRadius: 100,
-                    padding: '1px 7px',
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    marginLeft: 4
-                }}>{pending.length}</span>}
+                <button className={'tab-btn' + (tab === 'pending' ? ' active' : '')} onClick={() => setTab('pending')}>
+                    Pending Orders ({pending.length})
                 </button>
-                <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>All Orders
+                <button className={'tab-btn' + (tab === 'all' ? ' active' : '')} onClick={() => setTab('all')}>
+                    All Orders
                 </button>
             </div>
 
             {tab === 'pending' && (
                 <div>
+                    <h3 className="text">Orders Awaiting Approval</h3>
                     {pending.length === 0 ? (
-                        <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>No pending orders.
-                            🎉</div>
+                        <div className="text" style={{textAlign: 'center', padding: '2rem'}}>No orders awaiting
+                            approval.</div>
                     ) : (
-                        <div style={{display: 'grid', gap: 16}}>
+                        <div style={{display: 'grid', gap: '1rem'}}>
                             {pending.map(order => (
-                                <div key={order._id} className="card" style={{padding: '22px 24px'}}>
-                                    <div style={{marginBottom: 16}}>
+                                <div key={order._id} className="panel">
+                                    <div style={{marginBottom: '1rem'}}>
                                         <div style={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'flex-start',
                                             flexWrap: 'wrap',
                                             gap: 8,
-                                            marginBottom: 14
+                                            marginBottom: '0.75rem'
                                         }}>
                                             <div>
-                                                <div style={{
-                                                    fontFamily: 'var(--font-display)',
-                                                    fontWeight: 700,
-                                                    fontSize: '1rem',
-                                                    marginBottom: 4
-                                                }}>
-                                                    Order #{order._id.slice(-8)}
-                                                </div>
-                                                <div style={{fontSize: '0.8125rem', color: 'var(--text-3)'}}>
+                                                <h4 className="text" style={{margin: '0 0 0.25rem 0'}}>Order
+                                                    #{order._id.slice(-8)}</h4>
+                                                <p className="text"
+                                                   style={{margin: 0, fontSize: '0.85rem', opacity: 0.6}}>
                                                     {new Date(order.createdAt).toLocaleDateString('en-IN', {
                                                         day: 'numeric',
                                                         month: 'short',
                                                         year: 'numeric'
                                                     })}
-                                                </div>
+                                                </p>
                                             </div>
                                             <span className="badge badge-pending">{order.status}</span>
                                         </div>
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '1fr 1fr',
-                                            gap: '6px',
-                                            fontSize: '0.875rem',
-                                            marginBottom: 12
-                                        }}>
-                                            <div><span style={{color: 'var(--text-3)'}}>Vendor: </span><span
-                                                style={{color: 'var(--text)'}}>{order.vendorName}</span></div>
-                                            <div><span style={{color: 'var(--text-3)'}}>Total: </span><span style={{
-                                                color: 'var(--accent)',
-                                                fontWeight: 700
-                                            }}>₹{order.totalAmount}</span></div>
-                                        </div>
+                                        <p className="text" style={{margin: '0 0 0.3rem 0', fontSize: '0.9rem'}}>
+                                            <strong>Vendor:</strong> {order.vendorName}
+                                        </p>
+                                        <p className="text" style={{margin: '0 0 0.75rem 0', fontSize: '0.9rem'}}>
+                                            <strong>Total Amount:</strong> <span
+                                            style={{color: '#4ade80', fontWeight: 700}}>Rs. {order.totalAmount}</span>
+                                        </p>
                                         {order.deliveryAddress && (
-                                            <div style={{
-                                                padding: '10px 12px',
-                                                background: 'rgba(0,0,0,0.2)',
-                                                borderRadius: 8,
-                                                fontSize: '0.8125rem',
-                                                color: 'var(--text-3)',
-                                                marginBottom: 12
-                                            }}>
-                                                📍 {order.deliveryAddress.street}, {order.deliveryAddress.city} — {order.deliveryAddress.pincode}
-                                            </div>
+                                            <p className="text"
+                                               style={{margin: '0 0 0.75rem 0', fontSize: '0.85rem', opacity: 0.7}}>
+                                                Deliver
+                                                to: {order.deliveryAddress.street}, {order.deliveryAddress.city} - {order.deliveryAddress.pincode}
+                                            </p>
                                         )}
                                         <div style={{
-                                            padding: '10px 12px',
-                                            background: 'rgba(0,0,0,0.15)',
+                                            background: 'rgba(0,0,0,0.2)',
                                             borderRadius: 8,
-                                            marginBottom: 4
+                                            padding: '10px 12px'
                                         }}>
                                             <div style={{
                                                 fontSize: '0.75rem',
-                                                color: 'var(--text-3)',
+                                                color: 'var(--text-secondary)',
                                                 marginBottom: 6,
                                                 fontWeight: 600,
                                                 letterSpacing: '0.04em'
@@ -172,19 +156,31 @@ export default function SupplierPortal() {
                                                 <div key={i} style={{
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
-                                                    fontSize: '0.8125rem',
-                                                    padding: '3px 0'
+                                                    fontSize: '0.85rem',
+                                                    padding: '2px 0'
                                                 }}>
-                                                    <span style={{color: 'var(--text-2)'}}>{item.name}</span>
-                                                    <span style={{color: 'var(--accent)'}}>₹{item.price}</span>
+                                                    <span style={{color: 'rgba(255,255,255,0.8)'}}>{item.name}</span>
+                                                    <span style={{color: '#4ade80'}}>Rs. {item.price}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                    <div style={{display: 'flex', gap: 10, justifyContent: 'flex-end'}}>
-                                        <button className="btn-danger" onClick={() => reject(order._id)}>Reject</button>
-                                        <button className="btn-success" onClick={() => approve(order._id)}>✓ Approve &
-                                            Dispatch
+                                    <div style={{display: 'flex', gap: '0.75rem', justifyContent: 'flex-end'}}>
+                                        <button className="btn" onClick={() => reject(order._id)} style={{
+                                            maxWidth: 100,
+                                            margin: 0,
+                                            background: 'rgba(239,68,68,0.3)',
+                                            borderColor: 'rgba(239,68,68,0.4)',
+                                            color: '#ef4444'
+                                        }}>Reject
+                                        </button>
+                                        <button className="btn" onClick={() => approve(order._id)} style={{
+                                            maxWidth: 180,
+                                            margin: 0,
+                                            background: 'rgba(76,222,128,0.3)',
+                                            borderColor: 'rgba(76,222,128,0.4)',
+                                            color: '#4ade80'
+                                        }}>Approve and Dispatch
                                         </button>
                                     </div>
                                 </div>
@@ -195,40 +191,56 @@ export default function SupplierPortal() {
             )}
 
             {tab === 'all' && (
-                <div style={{display: 'grid', gap: 10}}>
+                <div>
+                    <h3 className="text">Order History</h3>
                     {all.length === 0 ? (
-                        <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>No orders found.</div>
-                    ) : all.map(order => (
-                        <div key={order._id} className="card" style={{
-                            padding: '16px 20px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: 10
-                        }}>
-                            <div>
-                                <div style={{fontWeight: 600, marginBottom: 4}}>Order #{order._id.slice(-8)}</div>
-                                <div style={{fontSize: '0.8125rem', color: 'var(--text-3)'}}>
-                                    {order.vendorName} ·
-                                    ₹{order.totalAmount} · {new Date(order.createdAt).toLocaleDateString('en-IN')}
+                        <p className="text">No orders found.</p>
+                    ) : (
+                        <div style={{display: 'grid', gap: '0.75rem'}}>
+                            {all.map(order => (
+                                <div key={order._id} className="panel" style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: 10
+                                }}>
+                                    <div>
+                                        <h4 className="text" style={{margin: '0 0 0.3rem 0'}}>Order
+                                            #{order._id.slice(-8)}</h4>
+                                        <p className="text" style={{margin: 0, fontSize: '0.85rem', opacity: 0.7}}>
+                                            {order.vendorName} -
+                                            Rs. {order.totalAmount} - {new Date(order.createdAt).toLocaleDateString('en-IN')}
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={'badge badge-' + (order.status === 'approved' ? 'approved' : order.status === 'rejected' ? 'rejected' : 'pending')}>
+                                        {order.status}
+                                    </span>
                                 </div>
-                            </div>
-                            <span
-                                className={`badge ${STATUS_BADGE[order.status] || 'badge-pending'}`}>{order.status}</span>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
             )}
 
-            <div style={{marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap'}}>
-                <button className="btn-ghost" onClick={() => navigate('/payments')} style={{fontSize: '0.875rem'}}>💳
-                    Payments
+            <div style={{
+                marginTop: '2rem',
+                display: 'flex',
+                gap: '0.75rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+            }}>
+                <button className="switch-link" onClick={() => navigate('/payments')}
+                        style={{width: 'auto', minHeight: 'auto', padding: '0.5rem 1rem'}}>Payment Processing
                 </button>
-                <button className="btn-ghost" onClick={() => navigate('/dashboard')} style={{fontSize: '0.875rem'}}>←
-                    Dashboard
+                <button className="switch-link" onClick={() => navigate('/dashboard')}
+                        style={{width: 'auto', minHeight: 'auto', padding: '0.5rem 1rem'}}>Back to Dashboard
+                </button>
+                <button className="switch-link" onClick={handleLogout}
+                        style={{width: 'auto', minHeight: 'auto', padding: '0.5rem 1rem'}}>Logout
                 </button>
             </div>
-        </Layout>
+        </div>
     )
 }
