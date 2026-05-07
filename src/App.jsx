@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-
+import React, {useState, useEffect} from "react";
 
 import Home from "./components/Home";
 import Signup from "./components/Signup";
@@ -12,17 +11,12 @@ import PaymentProcessing from "./components/PaymentProcessing";
 import ComplaintForm from "./components/ComplaintForm";
 
 function App() {
-
     const [view, setView] = useState("home");
-
-
     const [user, setUser] = useState(null);
     const [selectedType, setSelectedType] = useState("");
-
-
     const [message, setMessage] = useState("");
 
-
+    // Check for saved user session on mount
     useEffect(() => {
         const savedUser = localStorage.getItem("vndyn_user");
         if (savedUser) {
@@ -37,7 +31,6 @@ function App() {
             }
         }
     }, []);
-
 
     const goHome = () => {
         setView("home");
@@ -72,7 +65,7 @@ function App() {
     };
 
     const goToSupplierPortal = () => {
-        if (!user || user.type === "Street Vendor") return goHome();
+        if (!user || user.type !== "Retailer to Vendor") return goHome();
         setView("supplier");
         setMessage("");
     };
@@ -102,11 +95,10 @@ function App() {
         localStorage.setItem("vndyn_user", JSON.stringify(userData));
     };
 
-
     const renderCurrentView = () => {
         switch (view) {
             case "home":
-                return <Home onSelectType={goSignup} onLogin={goLogin} />;
+                return <Home onSelectType={goSignup} onLogin={goLogin}/>;
 
             case "signup":
                 return (
@@ -154,7 +146,7 @@ function App() {
                 );
 
             case "supplier":
-                if (!user || user.type === "Street Vendor") return goHome();
+                if (!user || user.type !== "Retailer to Vendor") return goHome();
                 return (
                     <SupplierPortal
                         user={user}
@@ -201,7 +193,7 @@ function App() {
                 );
 
             default:
-                return <Home onSelectType={goSignup} />;
+                return <Home onSelectType={goSignup}/>;
         }
     };
 
