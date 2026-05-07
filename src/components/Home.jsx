@@ -9,7 +9,6 @@ export default function Home({ onSelectType, onLogin }) {
     const intervals = useRef({ del: null, type: null });
 
     const setTitleTypedText = useCallback((newSuffix) => {
-
         if (intervals.current.del) clearInterval(intervals.current.del);
         if (intervals.current.type) clearInterval(intervals.current.type);
 
@@ -45,7 +44,6 @@ export default function Home({ onSelectType, onLogin }) {
                 }
             }
         }, 30);
-
     }, [baseText, title]);
 
     useEffect(() => {
@@ -57,8 +55,6 @@ export default function Home({ onSelectType, onLogin }) {
 
     return (
         <div className="landing-container">
-
-            {/* Background Video */}
             <video
                 autoPlay
                 loop
@@ -69,10 +65,7 @@ export default function Home({ onSelectType, onLogin }) {
                 <source src={bgVideo} type="video/mp4" />
             </video>
 
-            {/* Dark Overlay + Content */}
             <div className="content-overlay">
-
-                {/* Top Navigation */}
                 <nav className="top-nav">
                     <h2 className="logo">VnDyn</h2>
                     <div>
@@ -91,16 +84,12 @@ export default function Home({ onSelectType, onLogin }) {
                     </div>
                 </nav>
 
-                {/* Hero Section */}
                 <div className="hero-section">
                     <h1 className={fadeIn ? "fade-in" : ""}>{title}</h1>
-
                     <p className="subtitle">
                         Digital Hub for Street Food Vendors & Resource Retailers
                     </p>
-
                     <div className="button-group">
-
                         <button
                             className="btn primary-btn"
                             onMouseOver={() => setTitleTypedText("Street Vendor")}
@@ -109,7 +98,6 @@ export default function Home({ onSelectType, onLogin }) {
                         >
                             Join as Vendor
                         </button>
-
                         <button
                             className="btn secondary-btn"
                             onMouseOver={() => setTitleTypedText("Retailer to Vendor")}
@@ -118,10 +106,8 @@ export default function Home({ onSelectType, onLogin }) {
                         >
                             Join as Retailer
                         </button>
-
                     </div>
                 </div>
-
             </div>
         </div>
     );
