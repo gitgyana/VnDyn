@@ -26,7 +26,7 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
             await complaintAPI.submit(complaintData);
             setMessage("");
             setError("");
-            
+
             if (onSuccess) {
                 onSuccess("Complaint submitted successfully!");
             } else {
@@ -45,18 +45,18 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
     return (
         <div id="app">
             <h2 className="text">Lodge a Complaint</h2>
-            
+
             <div style={{
-                background: "rgba(255, 255, 255, 0.1)",
+                background: "rgba(255, 255, 255, 0.05)",
                 padding: "2rem",
                 borderRadius: "1rem",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
                 backdropFilter: "blur(10px)"
             }}>
                 <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1.5rem" }}>
                     <div>
-                        <label className="text" style={{ 
-                            display: "block", 
+                        <label className="text" style={{
+                            display: "block",
                             marginBottom: "0.5rem",
                             fontWeight: "bold"
                         }}>
@@ -78,8 +78,8 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
                     </div>
 
                     <div>
-                        <label className="text" style={{ 
-                            display: "block", 
+                        <label className="text" style={{
+                            display: "block",
                             marginBottom: "0.5rem",
                             fontWeight: "bold"
                         }}>
@@ -93,9 +93,9 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
                                 maxWidth: "400px",
                                 padding: "1rem",
                                 borderRadius: "0.5rem",
-                                border: "1px solid rgba(255, 255, 255, 0.3)",
-                                background: "rgba(255, 255, 255, 0.1)",
-                                color: "#2d3436",
+                                border: "1px solid rgba(255, 255, 255, 0.1)",
+                                background: "rgba(0, 0, 0, 0.2)",
+                                color: "#fff",
                                 fontSize: "1rem",
                                 resize: "vertical",
                                 minHeight: "120px"
@@ -123,12 +123,12 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
                         </div>
                     )}
 
-                    <button 
-                        className="btn" 
-                        type="submit" 
+                    <button
+                        className="btn"
+                        type="submit"
                         disabled={loading || !message.trim()}
-                        style={{ 
-                            maxWidth: "200px", 
+                        style={{
+                            maxWidth: "200px",
                             margin: "0 auto",
                             opacity: loading || !message.trim() ? 0.6 : 1
                         }}
@@ -141,40 +141,42 @@ export default function ComplaintForm({ user, onHome, onUserData, onSuccess }) {
                 <div style={{
                     marginTop: "2rem",
                     padding: "1rem",
-                    borderTop: "1px solid rgba(255, 255, 255, 0.2)"
+                    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+                    background: "rgba(0,0,0,0.2)",
+                    borderRadius: "0.5rem"
                 }}>
                     <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
                         Complaint will be filed by:
                     </h4>
-                    <p className="text" style={{ margin: "0 0 0.25rem 0", fontSize: "0.9rem" }}>
+                    <p className="text" style={{ margin: "0 0 0.25rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                         <strong>Name:</strong> {user.fullName}
                     </p>
-                    <p className="text" style={{ margin: "0 0 0.25rem 0", fontSize: "0.9rem" }}>
+                    <p className="text" style={{ margin: "0 0 0.25rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                         <strong>Type:</strong> {user.type}
                     </p>
-                    <p className="text" style={{ margin: 0, fontSize: "0.9rem" }}>
+                    <p className="text" style={{ margin: 0, fontSize: "0.9rem", opacity: 0.8 }}>
                         <strong>Email:</strong> {user.email}
                     </p>
                 </div>
             </div>
 
             {/* Navigation Buttons */}
-            <div style={{ 
-                marginTop: "2rem", 
-                display: "flex", 
-                gap: "1rem", 
+            <div style={{
+                marginTop: "2rem",
+                display: "flex",
+                gap: "1rem",
                 justifyContent: "center",
                 flexWrap: "wrap"
             }}>
-                <button 
-                    className="switch-link" 
+                <button
+                    className="switch-link"
                     onClick={onUserData}
                     disabled={loading}
                 >
                     Back to Dashboard
                 </button>
-                <button 
-                    className="switch-link" 
+                <button
+                    className="switch-link"
                     onClick={onHome}
                     disabled={loading}
                 >
