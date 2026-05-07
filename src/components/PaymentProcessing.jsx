@@ -1,319 +1,211 @@
-import React, { useEffect, useState } from "react";
-import { paymentAPI } from "../api.js";
-import PaymentModal from "./PaymentModal";
+import {useState, useEffect} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useAuth} from '../AuthContext'
+import {paymentAPI} from '../api'
+import Layout from './Layout'
+import PaymentModal from './PaymentModal'
 
-export default function PaymentProcessing({ user, onHome, onUserData, onAdmin }) {
-    const [payments, setPayments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [message, setMessage] = useState("");
-    const [filter, setFilter] = useState("pending");
-    const [selectedPayment, setSelectedPayment] = useState(null);
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
+export default function PaymentProcessing() {
+    const {user} = useAuth()
+    const navigate = useNavigate()
+    const [payments, setPayments] = useState([])
+    const [filter, setFilter] = useState('pending')
+    const [msg, setMsg] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [selected, setSelected] = useState(null)
 
     useEffect(() => {
-        fetchPayments();
-    }, [filter]);
+        fetchPayments()
+    }, [filter])
 
     const fetchPayments = async () => {
+        setLoading(true)
         try {
-            const data = await paymentAPI.getByStatus(filter);
-            setPayments(data);
-        } catch (error) {
-            setMessage("Failed to load payments: " + error.message);
+            setPayments(await paymentAPI.getByStatus(filter))
+        } catch (e) {
+            setMsg('Failed to load')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
-
-    const handleSettleClick = (payment) => {
-        setSelectedPayment(payment);
-        setShowPaymentModal(true);
-    };
-
-    const handlePaymentSuccess = async (paymentDetails) => {
-        try {
-            await paymentAPI.processPayment(
-                selectedPayment._id,
-                paymentDetails.paymentMethod,
-                {
-                    lastFour: paymentDetails.lastFour,
-                    holderName: paymentDetails.holderName
-                }
-            );
-            setMessage("Payment settled successfully!");
-            setShowPaymentModal(false);
-            setSelectedPayment(null);
-            setTimeout(() => setMessage(""), 3000);
-            fetchPayments();
-        } catch (error) {
-            setMessage("Failed to settle payment: " + error.message);
-            setShowPaymentModal(false);
-        }
-    };
-
-    const rejectPayment = async (paymentId) => {
-        if (window.confirm("Are you sure you want to reject this payment?")) {
-            try {
-                await paymentAPI.updateStatus(paymentId, 'rejected');
-                setMessage("Payment rejected!");
-                setTimeout(() => setMessage(""), 3000);
-                fetchPayments();
-            } catch (error) {
-                setMessage("Failed to reject payment: " + error.message);
-            }
-        }
-    };
-
-    const calculateTotalAmount = () => {
-        return payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-    };
-
-    const getPaymentMethodDisplay = (payment) => {
-        if (!payment.paymentMethod) return "Not paid yet";
-        const methods = {
-            card: "💳 Card",
-            upi: "📱 UPI",
-            netbanking: "🏦 Net Banking",
-            cod: "💵 Cash on Delivery"
-        };
-        return methods[payment.paymentMethod] || payment.paymentMethod;
-    };
-
-    if (loading) {
-        return (
-            <div id="app">
-                <div className="text" style={{ textAlign: "center", padding: "2rem" }}>
-                    Loading payments...
-                </div>
-            </div>
-        );
     }
 
+    const notify = (m) => {
+        setMsg(m);
+        setTimeout(() => setMsg(''), 3000)
+    }
+
+    const handleSuccess = async (details) => {
+        try {
+            await paymentAPI.processPayment(selected._id, details.paymentMethod, {
+                lastFour: details.lastFour,
+                holderName: details.holderName
+            })
+            notify('Payment settled successfully!');
+            setSelected(null);
+            fetchPayments()
+        } catch (e) {
+            notify('Failed: ' + e.message)
+        }
+    }
+
+    const reject = async (id) => {
+        if (!confirm('Reject this payment?')) return
+        try {
+            await paymentAPI.updateStatus(id, 'rejected');
+            notify('Rejected.');
+            fetchPayments()
+        } catch (e) {
+        }
+    }
+
+    const METHOD_ICONS = {card: '💳', upi: '📱', netbanking: '🏦', cod: '💵'}
+    const total = payments.reduce((s, p) => s + (p.amount || 0), 0)
+
     return (
-        <div id="app">
-            <h2 className="text">Payment Processing Dashboard</h2>
+        <Layout title="Payment Processing" subtitle="Manage and settle vendor payments">
+            {msg && <div className="alert alert-success">{msg}</div>}
 
-            {message && (
-                <div style={{
-                    background: "rgba(76, 222, 128, 0.2)",
-                    color: "#4ade80",
-                    padding: "0.75rem",
-                    borderRadius: "0.5rem",
-                    marginBottom: "1rem",
-                    textAlign: "center",
-                    border: "1px solid rgba(76, 222, 128, 0.3)"
-                }}>
-                    {message}
-                </div>
-            )}
-
-            {/* Filter Controls */}
-            <div style={{
-                display: "flex",
-                gap: "1rem",
-                marginBottom: "2rem",
-                justifyContent: "center",
-                flexWrap: "wrap"
-            }}>
-                <button
-                    className={filter === "pending" ? "btn" : "switch-link"}
-                    onClick={() => setFilter("pending")}
-                    style={{ maxWidth: "150px" }}
-                >
-                    Pending
-                </button>
-                <button
-                    className={filter === "settled" ? "btn" : "switch-link"}
-                    onClick={() => setFilter("settled")}
-                    style={{ maxWidth: "150px" }}
-                >
-                    Settled
-                </button>
-                <button
-                    className={filter === "rejected" ? "btn" : "switch-link"}
-                    onClick={() => setFilter("rejected")}
-                    style={{ maxWidth: "150px" }}
-                >
-                    Rejected
-                </button>
+            <div className="tab-bar">
+                {['pending', 'settled', 'rejected'].map(f => (
+                    <button key={f} className={`tab ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+                        {f.charAt(0).toUpperCase() + f.slice(1)}
+                    </button>
+                ))}
             </div>
 
-            {/* Summary Stats */}
             {payments.length > 0 && (
-                <div style={{
-                    background: "rgba(255, 255, 255, 0.05)",
-                    padding: "1rem",
-                    borderRadius: "0.5rem",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    marginBottom: "2rem",
-                    textAlign: "center"
-                }}>
-                    <h3 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                        {filter.charAt(0).toUpperCase() + filter.slice(1)} Payments Summary
-                    </h3>
-                    <p className="text" style={{ margin: 0 }}>
-                        <strong>Total:</strong> {payments.length} payments |
-                        <strong> Amount:</strong> ₹{calculateTotalAmount()}
-                    </p>
+                <div className="card"
+                     style={{padding: '16px 20px', marginBottom: 20, display: 'flex', gap: 24, flexWrap: 'wrap'}}>
+                    <div>
+                        <div style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-3)',
+                            marginBottom: 4,
+                            letterSpacing: '0.04em'
+                        }}>TOTAL PAYMENTS
+                        </div>
+                        <div style={{
+                            fontFamily: 'var(--font-display)',
+                            fontWeight: 700,
+                            fontSize: '1.25rem'
+                        }}>{payments.length}</div>
+                    </div>
+                    <div>
+                        <div style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-3)',
+                            marginBottom: 4,
+                            letterSpacing: '0.04em'
+                        }}>TOTAL AMOUNT
+                        </div>
+                        <div style={{
+                            fontFamily: 'var(--font-display)',
+                            fontWeight: 700,
+                            fontSize: '1.25rem',
+                            color: 'var(--accent)'
+                        }}>₹{total}</div>
+                    </div>
                 </div>
             )}
 
-            {/* Payments List */}
-            {payments.length > 0 ? (
-                <div style={{ display: "grid", gap: "1rem" }}>
-                    {payments.map((payment) => (
-                        <div key={payment._id} style={{
-                            background: "rgba(255, 255, 255, 0.05)",
-                            padding: "1.5rem",
-                            borderRadius: "0.5rem",
-                            border: "1px solid rgba(255, 255, 255, 0.1)"
-                        }}>
+            {loading ? (
+                <div style={{textAlign: 'center', padding: 60}}><span className="spinner"/></div>
+            ) : payments.length === 0 ? (
+                <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>No {filter} payments.</div>
+            ) : (
+                <div style={{display: 'grid', gap: 12}}>
+                    {payments.map(p => (
+                        <div key={p._id} className="card" style={{padding: '20px 24px'}}>
                             <div style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "flex-start",
-                                marginBottom: "1rem"
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                flexWrap: 'wrap',
+                                gap: 10,
+                                marginBottom: 12
                             }}>
-                                <div style={{ flex: 1 }}>
-                                    <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                        Payment #{payment._id.slice(-8)}
-                                    </h4>
-                                    <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                        <strong>Order ID:</strong> #{payment.orderId?.slice(-8)}
-                                    </p>
-                                    <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                        <strong>Vendor:</strong> {payment.vendorName}
-                                    </p>
-                                    <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                        <strong>Supplier:</strong> {payment.supplierName}
-                                    </p>
-                                    <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                        <strong>Date:</strong> {new Date(payment.createdAt).toLocaleDateString()}
-                                    </p>
-                                    {payment.status === "settled" && (
-                                        <>
-                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                                <strong>Method:</strong> {getPaymentMethodDisplay(payment)}
-                                            </p>
-                                            {payment.transactionId && (
-                                                <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.85rem", opacity: 0.8 }}>
-                                                    <strong>Transaction:</strong> {payment.transactionId}
-                                                </p>
-                                            )}
-                                            {payment.paidAt && (
-                                                <p className="text" style={{ margin: 0, fontSize: "0.85rem", opacity: 0.8 }}>
-                                                    <strong>Paid on:</strong> {new Date(payment.paidAt).toLocaleString()}
-                                                </p>
-                                            )}
-                                        </>
-                                    )}
-                                    <p className="text" style={{ margin: "0.5rem 0 0 0", fontSize: "1.1rem", fontWeight: "bold" }}>
-                                        <strong>Amount:</strong> ₹{payment.amount}
-                                    </p>
+                                <div>
+                                    <div style={{fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: 6}}>
+                                        Payment #{p._id.slice(-8)}
+                                    </div>
+                                    <div style={{
+                                        display: 'grid',
+                                        gap: '4px',
+                                        fontSize: '0.8125rem',
+                                        color: 'var(--text-3)'
+                                    }}>
+                                        <span>Order: #{p.orderId?.slice(-8)}</span>
+                                        <span>Vendor: <span
+                                            style={{color: 'var(--text-2)'}}>{p.vendorName}</span></span>
+                                        {p.supplierName && <span>Supplier: <span
+                                            style={{color: 'var(--text-2)'}}>{p.supplierName}</span></span>}
+                                        <span>{new Date(p.createdAt).toLocaleDateString('en-IN', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })}</span>
+                                        {p.status === 'settled' && p.paymentMethod && (
+                                            <span>{METHOD_ICONS[p.paymentMethod]} {p.paymentMethod?.toUpperCase()}</span>
+                                        )}
+                                        {p.transactionId && <span style={{
+                                            fontSize: '0.75rem',
+                                            color: 'var(--text-3)'
+                                        }}>TXN: {p.transactionId}</span>}
+                                    </div>
                                 </div>
-
-                                <span style={{
-                                    padding: "0.5rem 1rem",
-                                    borderRadius: "1rem",
-                                    fontSize: "0.8rem",
-                                    fontWeight: "bold",
-                                    background: payment.status === "pending" ?
-                                        "rgba(234, 179, 8, 0.2)" :
-                                        payment.status === "settled" ?
-                                            "rgba(34, 197, 94, 0.2)" :
-                                            "rgba(239, 68, 68, 0.2)",
-                                    color: payment.status === "pending" ?
-                                        "#eab308" :
-                                        payment.status === "settled" ?
-                                            "#22c55e" :
-                                            "#ef4444"
-                                }}>
-                                    {payment.status.toUpperCase()}
-                                </span>
+                                <div style={{textAlign: 'right'}}>
+                                    <div style={{
+                                        fontFamily: 'var(--font-display)',
+                                        fontWeight: 800,
+                                        fontSize: '1.25rem',
+                                        color: 'var(--accent)',
+                                        marginBottom: 8
+                                    }}>
+                                        ₹{p.amount}
+                                    </div>
+                                    <span
+                                        className={`badge ${p.status === 'pending' ? 'badge-pending' : p.status === 'settled' ? 'badge-settled' : 'badge-rejected'}`}>
+                    {p.status}
+                  </span>
+                                </div>
                             </div>
-
-                            {payment.status === "pending" && (
+                            {p.status === 'pending' && (
                                 <div style={{
-                                    display: "flex",
-                                    gap: "1rem",
-                                    justifyContent: "center",
-                                    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-                                    paddingTop: "1rem"
+                                    display: 'flex',
+                                    gap: 10,
+                                    justifyContent: 'flex-end',
+                                    paddingTop: 12,
+                                    borderTop: '1px solid var(--border)'
                                 }}>
-                                    <button
-                                        className="btn"
-                                        onClick={() => handleSettleClick(payment)}
-                                        style={{
-                                            maxWidth: "180px",
-                                            margin: 0,
-                                            background: "linear-gradient(45deg, #00d4ff, #00ff95)",
-                                            color: "#000"
-                                        }}
-                                    >
+                                    <button className="btn-danger" onClick={() => reject(p._id)}>Reject</button>
+                                    <button className="btn-primary" onClick={() => setSelected(p)}
+                                            style={{padding: '10px 20px', fontSize: '0.875rem'}}>
                                         💳 Pay Now
-                                    </button>
-                                    <button
-                                        className="btn"
-                                        onClick={() => rejectPayment(payment._id)}
-                                        style={{
-                                            maxWidth: "120px",
-                                            margin: 0,
-                                            background: "rgba(239, 68, 68, 0.8)"
-                                        }}
-                                    >
-                                        Reject
                                     </button>
                                 </div>
                             )}
                         </div>
                     ))}
                 </div>
-            ) : (
-                <div style={{
-                    background: "rgba(255, 255, 255, 0.05)",
-                    padding: "2rem",
-                    borderRadius: "0.5rem",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    textAlign: "center"
-                }}>
-                    <p className="text" style={{ margin: 0, fontSize: "1.1rem" }}>
-                        No {filter} payments found.
-                    </p>
-                </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div style={{
-                marginTop: "2rem",
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                flexWrap: "wrap"
-            }}>
-                {user?.type === "Admin" && (
-                    <button className="switch-link" onClick={onAdmin}>
-                        Admin Dashboard
-                    </button>
+            <div style={{marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap'}}>
+                {user?.type === 'Admin' && (
+                    <button className="btn-ghost" onClick={() => navigate('/admin')} style={{fontSize: '0.875rem'}}>⚙️
+                        Admin</button>
                 )}
-                <button className="switch-link" onClick={onUserData}>
-                    Back to Dashboard
-                </button>
-                <button className="switch-link" onClick={onHome}>
-                    Logout
+                <button className="btn-ghost" onClick={() => navigate('/dashboard')} style={{fontSize: '0.875rem'}}>←
+                    Dashboard
                 </button>
             </div>
 
-            {/* Payment Modal */}
-            {showPaymentModal && selectedPayment && (
+            {selected && (
                 <PaymentModal
-                    payment={selectedPayment}
-                    onClose={() => {
-                        setShowPaymentModal(false);
-                        setSelectedPayment(null);
-                    }}
-                    onSuccess={handlePaymentSuccess}
+                    payment={selected}
+                    onClose={() => setSelected(null)}
+                    onSuccess={handleSuccess}
                 />
             )}
-        </div>
-    );
+        </Layout>
+    )
 }
