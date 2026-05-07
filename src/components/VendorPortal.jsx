@@ -1,399 +1,312 @@
-import React, { useState, useEffect } from "react";
-import { resourceAPI, orderAPI, generateObjectId } from "../api.js";
-import PaymentModal from "./PaymentModal";
+import {useState, useEffect} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useAuth} from '../AuthContext'
+import {resourceAPI, orderAPI, generateObjectId} from '../api'
+import Layout from './Layout'
+import PaymentModal from './PaymentModal'
 
-export default function VendorPortal({ user, onHome, onUserData, onComplaints }) {
-    const [resources, setResources] = useState([]);
-    const [cart, setCart] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [message, setMessage] = useState("");
-    const [myOrders, setMyOrders] = useState([]);
-    const [activeTab, setActiveTab] = useState("browse");
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [currentOrder, setCurrentOrder] = useState(null);
+export default function VendorPortal() {
+    const {user} = useAuth()
+    const navigate = useNavigate()
+    const [resources, setResources] = useState([])
+    const [cart, setCart] = useState([])
+    const [orders, setOrders] = useState([])
+    const [tab, setTab] = useState('browse')
+    const [msg, setMsg] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [showPayment, setShowPayment] = useState(false)
+    const [currentOrder, setCurrentOrder] = useState(null)
 
     useEffect(() => {
         fetchResources();
-        fetchMyOrders();
-    }, []);
+        fetchOrders()
+    }, [])
 
     const fetchResources = async () => {
         try {
-            const data = await resourceAPI.getAll();
-            setResources(data);
-        } catch (error) {
-            setMessage("Failed to load resources: " + error.message);
+            setResources(await resourceAPI.getAll())
+        } catch (e) {
+            setMsg('Failed to load resources')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
-
-    const fetchMyOrders = async () => {
+    }
+    const fetchOrders = async () => {
         try {
-            const orders = await orderAPI.getByVendor(user.email);
-            setMyOrders(orders);
-        } catch (error) {
-            console.error("Failed to load orders:", error);
+            setOrders(await orderAPI.getByVendor(user.email))
+        } catch (e) {
         }
-    };
-
-    const addToCart = (item) => {
-        if (!cart.find((c) => c._id === item._id)) {
-            setCart([...cart, item]);
-            setMessage(`Added ${item.name} to cart!`);
-            setTimeout(() => setMessage(""), 3000);
-        } else {
-            setMessage(`${item.name} is already in cart!`);
-            setTimeout(() => setMessage(""), 3000);
-        }
-    };
-
-    const removeFromCart = (itemId) => {
-        setCart(cart.filter(item => item._id !== itemId));
-        setMessage("Item removed from cart");
-        setTimeout(() => setMessage(""), 3000);
-    };
-
-    const placeOrder = async () => {
-        if (cart.length === 0) {
-            setMessage("Cart is empty!");
-            return;
-        }
-
-        try {
-            const totalAmount = cart.reduce((sum, item) => sum + (item.price || 0), 0);
-            const orderData = {
-                _id: generateObjectId(),
-                vendorId: user.email,
-                vendorName: user.fullName,
-                items: cart.map(item => ({
-                    id: item._id,
-                    name: item.name,
-                    price: item.price || 0
-                })),
-                totalAmount: totalAmount,
-                status: 'pending',
-                deliveryAddress: user.address || {
-                    street: "Not provided",
-                    city: "",
-                    state: "",
-                    pincode: ""
-                }
-            };
-
-            const result = await orderAPI.create(orderData);
-            setCurrentOrder(result.data);
-            setMessage("Order placed successfully! Proceed to payment.");
-            setCart([]);
-            fetchMyOrders();
-
-            // Show payment modal after order placement
-            setTimeout(() => {
-                setShowPaymentModal(true);
-            }, 1000);
-
-            setTimeout(() => setMessage(""), 5000);
-        } catch (error) {
-            setMessage("Failed to place order: " + error.message);
-        }
-    };
-
-    const handlePaymentSuccess = async (paymentDetails) => {
-        setShowPaymentModal(false);
-        setMessage("Payment completed successfully! Your order is confirmed.");
-        fetchMyOrders();
-        setTimeout(() => setMessage(""), 5000);
-    };
-
-    const calculateTotal = () => {
-        return cart.reduce((sum, item) => sum + (item.price || 0), 0);
-    };
-
-    const getStatusColor = (status) => {
-        switch(status) {
-            case "pending": return { bg: "rgba(234, 179, 8, 0.2)", color: "#eab308" };
-            case "approved": return { bg: "rgba(34, 197, 94, 0.2)", color: "#22c55e" };
-            case "rejected": return { bg: "rgba(239, 68, 68, 0.2)", color: "#ef4444" };
-            default: return { bg: "rgba(255,255,255,0.1)", color: "#fff" };
-        }
-    };
-
-    if (loading) {
-        return (
-            <div id="app">
-                <div className="text" style={{ textAlign: "center", padding: "2rem" }}>
-                    Loading resources...
-                </div>
-            </div>
-        );
     }
 
-    return (
-        <div id="app">
-            <h2 className="text">Vendor Portal - {user.fullName}</h2>
+    const notify = (m) => {
+        setMsg(m);
+        setTimeout(() => setMsg(''), 3000)
+    }
 
-            {/* Address Display */}
+    const addToCart = (item) => {
+        if (cart.find(c => c._id === item._id)) {
+            notify(`${item.name} already in cart`);
+            return
+        }
+        setCart(p => [...p, item]);
+        notify(`Added ${item.name}`)
+    }
+    const removeFromCart = (id) => {
+        setCart(p => p.filter(i => i._id !== id));
+        notify('Removed from cart')
+    }
+    const total = cart.reduce((s, i) => s + (i.price || 0), 0)
+
+    const placeOrder = async () => {
+        if (!cart.length) {
+            notify('Cart is empty');
+            return
+        }
+        try {
+            const orderData = {
+                _id: generateObjectId(),
+                vendorId: user.email, vendorName: user.fullName,
+                items: cart.map(i => ({id: i._id, name: i.name, price: i.price || 0})),
+                totalAmount: total, status: 'pending',
+                deliveryAddress: user.address || {street: 'N/A', city: '', state: '', pincode: ''}
+            }
+            const result = await orderAPI.create(orderData)
+            setCurrentOrder(result.data);
+            setCart([]);
+            fetchOrders()
+            notify('Order placed! Proceed to payment.')
+            setTimeout(() => setShowPayment(true), 800)
+        } catch (e) {
+            notify('Failed to place order: ' + e.message)
+        }
+    }
+
+    const STATUS_BADGE = {pending: 'badge-pending', approved: 'badge-settled', rejected: 'badge-rejected'}
+
+    if (loading) return <Layout title="Vendor Portal">
+        <div style={{textAlign: 'center', padding: 60, color: 'var(--text-3)'}}><span className="spinner"/></div>
+    </Layout>
+
+    return (
+        <Layout title="Vendor Portal" subtitle={`Browse resources and manage your orders · ${user.fullName}`}>
             {user.address && (
                 <div style={{
-                    background: "rgba(255, 255, 255, 0.05)",
-                    padding: "1rem",
-                    borderRadius: "0.5rem",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    marginBottom: "1.5rem"
+                    padding: '10px 16px',
+                    background: 'var(--accent-dim)',
+                    border: '1px solid rgba(0,229,160,0.2)',
+                    borderRadius: 'var(--radius)',
+                    marginBottom: 24,
+                    fontSize: '0.8125rem',
+                    color: 'var(--accent)'
                 }}>
-                    <p className="text" style={{ margin: 0, fontSize: "0.9rem" }}>
-                        <strong>📍 Delivery Address:</strong> {user.address.street}, {user.address.city}, {user.address.state} - {user.address.pincode}
-                        {user.address.landmark && ` (Near: ${user.address.landmark})`}
-                    </p>
+                    📍 Delivering to: {user.address.street}, {user.address.city} — {user.address.pincode}
                 </div>
             )}
 
-            {message && (
-                <div style={{
-                    background: "rgba(76, 222, 128, 0.2)",
-                    color: "#4ade80",
-                    padding: "0.75rem",
-                    borderRadius: "0.5rem",
-                    marginBottom: "1rem",
-                    textAlign: "center",
-                    border: "1px solid rgba(76, 222, 128, 0.3)"
-                }}>
-                    {message}
-                </div>
-            )}
+            {msg && <div className="alert alert-success">{msg}</div>}
 
-            {/* Tab Navigation */}
-            <div style={{
-                display: "flex",
-                gap: "1rem",
-                marginBottom: "2rem",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                paddingBottom: "1rem"
-            }}>
-                <button
-                    className={activeTab === "browse" ? "btn" : "switch-link"}
-                    onClick={() => setActiveTab("browse")}
-                    style={{ maxWidth: "150px" }}
-                >
-                    Browse Items
+            <div className="tab-bar">
+                <button className={`tab ${tab === 'browse' ? 'active' : ''}`} onClick={() => setTab('browse')}>Browse
+                    Resources
                 </button>
-                <button
-                    className={activeTab === "cart" ? "btn" : "switch-link"}
-                    onClick={() => setActiveTab("cart")}
-                    style={{ maxWidth: "150px" }}
-                >
-                    Cart ({cart.length})
+                <button className={`tab ${tab === 'cart' ? 'active' : ''}`} onClick={() => setTab('cart')}>
+                    Cart {cart.length > 0 && <span style={{
+                    background: 'var(--accent)',
+                    color: '#000',
+                    borderRadius: '100px',
+                    padding: '1px 7px',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    marginLeft: 4
+                }}>{cart.length}</span>}
                 </button>
-                <button
-                    className={activeTab === "orders" ? "btn" : "switch-link"}
-                    onClick={() => setActiveTab("orders")}
-                    style={{ maxWidth: "150px" }}
-                >
-                    My Orders
+                <button className={`tab ${tab === 'orders' ? 'active' : ''}`} onClick={() => setTab('orders')}>My
+                    Orders
                 </button>
             </div>
 
-            {/* Browse Resources Tab */}
-            {activeTab === "browse" && (
+            {tab === 'browse' && (
                 <div>
-                    <h3 className="text">Available Resources</h3>
-                    {resources.length > 0 ? (
-                        <div style={{ display: "grid", gap: "1rem" }}>
-                            {resources.map((resource) => (
-                                <div key={resource._id} style={{
-                                    background: "rgba(255, 255, 255, 0.05)",
-                                    padding: "1rem",
-                                    borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.1)"
+                    {resources.length === 0 ? (
+                        <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>No resources
+                            available</div>
+                    ) : (
+                        <div style={{display: 'grid', gap: 12}}>
+                            {resources.map(r => (
+                                <div key={r._id} className="card" style={{
+                                    padding: '18px 22px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: 16
                                 }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div>
-                                            <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                                {resource.name}
-                                            </h4>
-                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
-                                                {resource.description}
-                                            </p>
-                                            <p className="text" style={{ margin: 0, fontWeight: "bold", color: "#4ade80" }}>
-                                                ₹{resource.price}
-                                            </p>
+                                    <div style={{flex: 1}}>
+                                        <div style={{
+                                            fontFamily: 'var(--font-display)',
+                                            fontWeight: 700,
+                                            marginBottom: 4
+                                        }}>{r.name}</div>
+                                        <div style={{
+                                            fontSize: '0.8125rem',
+                                            color: 'var(--text-3)',
+                                            marginBottom: 6
+                                        }}>{r.description}</div>
+                                        <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+                                            <span style={{
+                                                fontWeight: 700,
+                                                color: 'var(--accent)',
+                                                fontSize: '1.1rem'
+                                            }}>₹{r.price}</span>
+                                            <span style={{
+                                                fontSize: '0.75rem',
+                                                color: 'var(--text-3)',
+                                                padding: '2px 8px',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                borderRadius: 4
+                                            }}>{r.category}</span>
                                         </div>
-                                        <button
-                                            className="btn"
-                                            onClick={() => addToCart(resource)}
-                                            style={{ maxWidth: "100px", margin: 0 }}
-                                        >
-                                            Add
-                                        </button>
                                     </div>
+                                    <button className="btn-ghost" onClick={() => addToCart(r)}
+                                            style={{padding: '9px 18px', fontSize: '0.8125rem', whiteSpace: 'nowrap'}}
+                                            disabled={!!cart.find(c => c._id === r._id)}>
+                                        {cart.find(c => c._id === r._id) ? '✓ Added' : '+ Add'}
+                                    </button>
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <p className="text">No resources available at the moment.</p>
                     )}
                 </div>
             )}
 
-            {/* Cart Tab */}
-            {activeTab === "cart" && (
+            {tab === 'cart' && (
                 <div>
-                    {cart.length > 0 ? (
+                    {cart.length === 0 ? (
+                        <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>
+                            Your cart is empty. Browse items to add them.
+                        </div>
+                    ) : (
                         <>
-                            <h3 className="text">Shopping Cart</h3>
-                            <div style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
-                                {cart.map((item) => (
-                                    <div key={item._id} style={{
-                                        background: "rgba(255, 255, 255, 0.05)",
-                                        padding: "1rem",
-                                        borderRadius: "0.5rem",
-                                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center"
+                            <div style={{display: 'grid', gap: 10, marginBottom: 24}}>
+                                {cart.map(item => (
+                                    <div key={item._id} className="card" style={{
+                                        padding: '14px 18px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between'
                                     }}>
                                         <div>
-                                            <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                                {item.name}
-                                            </h4>
-                                            <p className="text" style={{ margin: 0, fontWeight: "bold", color: "#4ade80" }}>
-                                                ₹{item.price}
-                                            </p>
+                                            <div style={{fontWeight: 600, marginBottom: 2}}>{item.name}</div>
+                                            <div style={{color: 'var(--accent)', fontWeight: 700}}>₹{item.price}</div>
                                         </div>
-                                        <button
-                                            className="switch-link"
-                                            onClick={() => removeFromCart(item._id)}
-                                            style={{ maxWidth: "80px", color: "#ef4444" }}
-                                        >
-                                            Remove
+                                        <button onClick={() => removeFromCart(item._id)} style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--red)',
+                                            cursor: 'pointer',
+                                            fontSize: '0.8125rem',
+                                            fontWeight: 600
+                                        }}>Remove
                                         </button>
                                     </div>
                                 ))}
                             </div>
-                            <div style={{
-                                background: "rgba(255, 255, 255, 0.05)",
-                                padding: "1.5rem",
-                                borderRadius: "0.5rem",
-                                border: "1px solid rgba(255, 255, 255, 0.1)",
-                                textAlign: "center"
-                            }}>
-                                <h3 className="text" style={{ margin: "0 0 1rem 0" }}>Total: ₹{calculateTotal()}</h3>
-
-                                {/* Delivery Address Summary */}
-                                {user.address && (
-                                    <div style={{
-                                        marginBottom: "1rem",
-                                        padding: "0.75rem",
-                                        background: "rgba(0,0,0,0.2)",
-                                        borderRadius: "0.5rem",
-                                        fontSize: "0.85rem"
-                                    }}>
-                                        <p className="text" style={{ margin: 0, opacity: 0.8 }}>
-                                            📍 Deliver to: {user.address.street}, {user.address.city}
-                                        </p>
-                                    </div>
+                            <div className="card" style={{padding: '24px', textAlign: 'center'}}>
+                                {user?.address && (
+                                    <p style={{fontSize: '0.8125rem', color: 'var(--text-3)', marginBottom: 12}}>
+                                        📍 {user.address.street}, {user.address.city}
+                                    </p>
                                 )}
-
-                                <button className="btn" onClick={placeOrder} style={{ margin: 0 }}>
+                                <div style={{
+                                    fontFamily: 'var(--font-display)',
+                                    fontSize: '1.5rem',
+                                    fontWeight: 700,
+                                    marginBottom: 20
+                                }}>
+                                    Total: <span style={{color: 'var(--accent)'}}>₹{total}</span>
+                                </div>
+                                <button className="btn-primary" onClick={placeOrder} style={{minWidth: 200}}>
                                     Place Order & Pay
                                 </button>
                             </div>
                         </>
-                    ) : (
-                        <div className="text" style={{ textAlign: "center", padding: "2rem" }}>
-                            Your cart is empty. Browse items to add them to cart.
-                        </div>
                     )}
                 </div>
             )}
 
-            {/* Orders Tab */}
-            {activeTab === "orders" && (
+            {tab === 'orders' && (
                 <div>
-                    <h3 className="text">My Orders</h3>
-                    {myOrders.length > 0 ? (
-                        <div style={{ display: "grid", gap: "1rem" }}>
-                            {myOrders.map((order) => {
-                                const statusStyle = getStatusColor(order.status);
-                                return (
-                                    <div key={order._id} style={{
-                                        background: "rgba(255, 255, 255, 0.05)",
-                                        padding: "1rem",
-                                        borderRadius: "0.5rem",
-                                        border: "1px solid rgba(255, 255, 255, 0.1)"
-                                    }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                            <div>
-                                                <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                                    Order #{order._id.slice(-8)}
-                                                </h4>
-                                                <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                                    Items: {order.items.length} | Total: ₹{order.totalAmount}
-                                                </p>
-                                                <p className="text" style={{ margin: 0, fontSize: "0.9rem", opacity: 0.8 }}>
-                                                    Date: {new Date(order.createdAt).toLocaleDateString()}
-                                                </p>
-                                                {order.deliveryAddress && (
-                                                    <p className="text" style={{ margin: "0.5rem 0 0 0", fontSize: "0.85rem", opacity: 0.7 }}>
-                                                        📍 {order.deliveryAddress.street}, {order.deliveryAddress.city}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <span style={{
-                                                padding: "0.25rem 0.75rem",
-                                                borderRadius: "1rem",
-                                                fontSize: "0.8rem",
-                                                fontWeight: "bold",
-                                                background: statusStyle.bg,
-                                                color: statusStyle.color
-                                            }}>
-                                                {order.status.toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                    {orders.length === 0 ? (
+                        <div style={{textAlign: 'center', padding: 48, color: 'var(--text-3)'}}>No orders yet.</div>
                     ) : (
-                        <p className="text">No orders found.</p>
+                        <div style={{display: 'grid', gap: 12}}>
+                            {orders.map(order => (
+                                <div key={order._id} className="card" style={{padding: '18px 22px'}}>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        flexWrap: 'wrap',
+                                        gap: 10
+                                    }}>
+                                        <div>
+                                            <div style={{
+                                                fontFamily: 'var(--font-display)',
+                                                fontWeight: 700,
+                                                marginBottom: 6
+                                            }}>
+                                                Order #{order._id.slice(-8)}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '0.8125rem',
+                                                color: 'var(--text-3)',
+                                                marginBottom: 4
+                                            }}>
+                                                {order.items?.length} item{order.items?.length !== 1 ? 's' : ''} ·
+                                                ₹{order.totalAmount}
+                                            </div>
+                                            <div style={{fontSize: '0.8125rem', color: 'var(--text-3)'}}>
+                                                {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })}
+                                            </div>
+                                        </div>
+                                        <span className={`badge ${STATUS_BADGE[order.status] || 'badge-pending'}`}>
+                      {order.status}
+                    </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div style={{
-                marginTop: "2rem",
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "center",
-                flexWrap: "wrap"
-            }}>
-                <button className="switch-link" onClick={onComplaints}>
+            <div style={{marginTop: 36, display: 'flex', gap: 12, flexWrap: 'wrap'}}>
+                <button className="btn-ghost" onClick={() => navigate('/complaints')} style={{fontSize: '0.875rem'}}>📋
                     File Complaint
                 </button>
-                <button className="switch-link" onClick={onUserData}>
-                    Back to Dashboard
-                </button>
-                <button className="switch-link" onClick={onHome}>
-                    Logout
+                <button className="btn-ghost" onClick={() => navigate('/dashboard')} style={{fontSize: '0.875rem'}}>←
+                    Dashboard
                 </button>
             </div>
 
-            {/* Payment Modal */}
-            {showPaymentModal && currentOrder && (
+            {showPayment && currentOrder && (
                 <PaymentModal
-                    payment={{
-                        amount: currentOrder.totalAmount,
-                        _id: "new_payment",
-                        orderId: currentOrder._id
-                    }}
+                    payment={{amount: currentOrder.totalAmount, _id: 'new', orderId: currentOrder._id}}
                     onClose={() => {
-                        setShowPaymentModal(false);
-                        setCurrentOrder(null);
+                        setShowPayment(false);
+                        setCurrentOrder(null)
                     }}
-                    onSuccess={handlePaymentSuccess}
+                    onSuccess={() => {
+                        setShowPayment(false);
+                        setCurrentOrder(null);
+                        notify('Payment successful! Order confirmed.');
+                        fetchOrders()
+                    }}
                 />
             )}
-        </div>
-    );
+        </Layout>
+    )
 }
