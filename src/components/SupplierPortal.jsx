@@ -17,7 +17,7 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
             const pending = await orderAPI.getByStatus("pending");
             const all = await orderAPI.getByStatus("approved");
             const rejected = await orderAPI.getByStatus("rejected");
-            
+
             setPendingOrders(pending);
             setAllOrders([...all, ...rejected, ...pending]);
         } catch (error) {
@@ -57,6 +57,15 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
         }
     };
 
+    const getStatusStyle = (status) => {
+        switch(status) {
+            case "pending": return { bg: "rgba(234, 179, 8, 0.2)", color: "#eab308" };
+            case "approved": return { bg: "rgba(34, 197, 94, 0.2)", color: "#22c55e" };
+            case "rejected": return { bg: "rgba(239, 68, 68, 0.2)", color: "#ef4444" };
+            default: return { bg: "rgba(255,255,255,0.1)", color: "#fff" };
+        }
+    };
+
     if (loading) {
         return (
             <div id="app">
@@ -90,7 +99,7 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
                 display: "flex",
                 gap: "1rem",
                 marginBottom: "2rem",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
                 paddingBottom: "1rem"
             }}>
                 <button
@@ -117,44 +126,58 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
                         <div style={{ display: "grid", gap: "1rem" }}>
                             {pendingOrders.map((order) => (
                                 <div key={order._id} style={{
-                                    background: "rgba(255, 255, 255, 0.1)",
+                                    background: "rgba(255, 255, 255, 0.05)",
                                     padding: "1.5rem",
                                     borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)"
+                                    border: "1px solid rgba(255, 255, 255, 0.1)"
                                 }}>
                                     <div style={{ marginBottom: "1rem" }}>
                                         <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
                                             Order #{order._id.slice(-8)}
                                         </h4>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             <strong>Vendor:</strong> {order.vendorName}
                                         </p>
-                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             <strong>Total Amount:</strong> ₹{order.totalAmount}
                                         </p>
-                                        <p className="text" style={{ margin: "0 0 1rem 0", fontSize: "0.9rem" }}>
+                                        <p className="text" style={{ margin: "0 0 1rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                             <strong>Order Date:</strong> {new Date(order.createdAt).toLocaleDateString()}
                                         </p>
-                                        
+
+                                        {/* Delivery Address */}
+                                        {order.deliveryAddress && (
+                                            <div style={{
+                                                background: "rgba(0,0,0,0.2)",
+                                                padding: "0.75rem",
+                                                borderRadius: "0.5rem",
+                                                marginBottom: "1rem"
+                                            }}>
+                                                <p className="text" style={{ margin: 0, fontSize: "0.85rem" }}>
+                                                    <strong>📍 Deliver to:</strong> {order.deliveryAddress.street}, {order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.pincode}
+                                                </p>
+                                            </div>
+                                        )}
+
                                         {/* Order Items */}
                                         <div style={{ marginBottom: "1rem" }}>
                                             <h5 className="text" style={{ margin: "0 0 0.5rem 0" }}>Items:</h5>
                                             <ul style={{ margin: 0, paddingLeft: "1.5rem" }}>
                                                 {order.items.map((item, index) => (
-                                                    <li key={index} className="text" style={{ fontSize: "0.85rem" }}>
+                                                    <li key={index} className="text" style={{ fontSize: "0.85rem", opacity: 0.9 }}>
                                                         {item.name} - ₹{item.price}
                                                     </li>
                                                 ))}
                                             </ul>
                                         </div>
                                     </div>
-                                    
+
                                     <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
                                         <button
                                             className="btn"
                                             onClick={() => approveOrder(order._id)}
-                                            style={{ 
-                                                maxWidth: "140px", 
+                                            style={{
+                                                maxWidth: "140px",
                                                 margin: 0,
                                                 background: "rgba(34, 197, 94, 0.8)"
                                             }}
@@ -164,8 +187,8 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
                                         <button
                                             className="btn"
                                             onClick={() => rejectOrder(order._id)}
-                                            style={{ 
-                                                maxWidth: "100px", 
+                                            style={{
+                                                maxWidth: "100px",
                                                 margin: 0,
                                                 background: "rgba(239, 68, 68, 0.8)"
                                             }}
@@ -177,7 +200,7 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
                             ))}
                         </div>
                     ) : (
-                        <div className="text" style={{ textAlign: "center", padding: "2rem" }}>
+                        <div className="text" style={{ textAlign: "center", padding: "2rem", opacity: 0.7 }}>
                             No orders awaiting approval.
                         </div>
                     )}
@@ -190,58 +213,53 @@ export default function SupplierPortal({ user, onHome, onUserData, onPayments })
                     <h3 className="text">Order History</h3>
                     {allOrders.length > 0 ? (
                         <div style={{ display: "grid", gap: "1rem" }}>
-                            {allOrders.map((order) => (
-                                <div key={order._id} style={{
-                                    background: "rgba(255, 255, 255, 0.1)",
-                                    padding: "1rem",
-                                    borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)"
-                                }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div>
-                                            <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                                Order #{order._id.slice(-8)}
-                                            </h4>
-                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                                Vendor: {order.vendorName} | Amount: ₹{order.totalAmount}
-                                            </p>
-                                            <p className="text" style={{ margin: 0, fontSize: "0.9rem" }}>
-                                                Date: {new Date(order.createdAt).toLocaleDateString()}
-                                            </p>
+                            {allOrders.map((order) => {
+                                const statusStyle = getStatusStyle(order.status);
+                                return (
+                                    <div key={order._id} style={{
+                                        background: "rgba(255, 255, 255, 0.05)",
+                                        padding: "1rem",
+                                        borderRadius: "0.5rem",
+                                        border: "1px solid rgba(255, 255, 255, 0.1)"
+                                    }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <div>
+                                                <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
+                                                    Order #{order._id.slice(-8)}
+                                                </h4>
+                                                <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
+                                                    Vendor: {order.vendorName} | Amount: ₹{order.totalAmount}
+                                                </p>
+                                                <p className="text" style={{ margin: 0, fontSize: "0.9rem", opacity: 0.8 }}>
+                                                    Date: {new Date(order.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <span style={{
+                                                padding: "0.25rem 0.75rem",
+                                                borderRadius: "1rem",
+                                                fontSize: "0.8rem",
+                                                fontWeight: "bold",
+                                                background: statusStyle.bg,
+                                                color: statusStyle.color
+                                            }}>
+                                                {order.status.toUpperCase()}
+                                            </span>
                                         </div>
-                                        <span style={{
-                                            padding: "0.25rem 0.75rem",
-                                            borderRadius: "1rem",
-                                            fontSize: "0.8rem",
-                                            fontWeight: "bold",
-                                            background: order.status === "pending" ? 
-                                                "rgba(234, 179, 8, 0.2)" : 
-                                                order.status === "approved" ? 
-                                                "rgba(34, 197, 94, 0.2)" : 
-                                                "rgba(239, 68, 68, 0.2)",
-                                            color: order.status === "pending" ? 
-                                                "#eab308" : 
-                                                order.status === "approved" ? 
-                                                "#22c55e" : 
-                                                "#ef4444"
-                                        }}>
-                                            {order.status.toUpperCase()}
-                                        </span>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
-                        <p className="text">No orders found.</p>
+                        <p className="text" style={{ opacity: 0.7 }}>No orders found.</p>
                     )}
                 </div>
             )}
 
             {/* Navigation Buttons */}
-            <div style={{ 
-                marginTop: "2rem", 
-                display: "flex", 
-                gap: "1rem", 
+            <div style={{
+                marginTop: "2rem",
+                display: "flex",
+                gap: "1rem",
                 justifyContent: "center",
                 flexWrap: "wrap"
             }}>
