@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { resourceAPI, orderAPI, generateObjectId } from "../mongoAPI";
+import PaymentModal from "./PaymentModal";
 
 export default function VendorPortal({ user, onHome, onUserData, onComplaints }) {
     const [resources, setResources] = useState([]);
@@ -8,6 +9,8 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
     const [message, setMessage] = useState("");
     const [myOrders, setMyOrders] = useState([]);
     const [activeTab, setActiveTab] = useState("browse");
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [currentOrder, setCurrentOrder] = useState(null);
 
     useEffect(() => {
         fetchResources();
@@ -69,21 +72,50 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                     price: item.price || 0
                 })),
                 totalAmount: totalAmount,
-                status: 'pending'
+                status: 'pending',
+                deliveryAddress: user.address || {
+                    street: "Not provided",
+                    city: "",
+                    state: "",
+                    pincode: ""
+                }
             };
 
-            await orderAPI.create(orderData);
-            setMessage("Order placed successfully!");
+            const result = await orderAPI.create(orderData);
+            setCurrentOrder(result.data);
+            setMessage("Order placed successfully! Proceed to payment.");
             setCart([]);
-            fetchMyOrders(); // Refresh orders
+            fetchMyOrders();
+
+            // Show payment modal after order placement
+            setTimeout(() => {
+                setShowPaymentModal(true);
+            }, 1000);
+
             setTimeout(() => setMessage(""), 5000);
         } catch (error) {
             setMessage("Failed to place order: " + error.message);
         }
     };
 
+    const handlePaymentSuccess = async (paymentDetails) => {
+        setShowPaymentModal(false);
+        setMessage("Payment completed successfully! Your order is confirmed.");
+        fetchMyOrders();
+        setTimeout(() => setMessage(""), 5000);
+    };
+
     const calculateTotal = () => {
         return cart.reduce((sum, item) => sum + (item.price || 0), 0);
+    };
+
+    const getStatusColor = (status) => {
+        switch(status) {
+            case "pending": return { bg: "rgba(234, 179, 8, 0.2)", color: "#eab308" };
+            case "approved": return { bg: "rgba(34, 197, 94, 0.2)", color: "#22c55e" };
+            case "rejected": return { bg: "rgba(239, 68, 68, 0.2)", color: "#ef4444" };
+            default: return { bg: "rgba(255,255,255,0.1)", color: "#fff" };
+        }
     };
 
     if (loading) {
@@ -99,6 +131,22 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
     return (
         <div id="app">
             <h2 className="text">Vendor Portal - {user.fullName}</h2>
+
+            {/* Address Display */}
+            {user.address && (
+                <div style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    padding: "1rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    marginBottom: "1.5rem"
+                }}>
+                    <p className="text" style={{ margin: 0, fontSize: "0.9rem" }}>
+                        <strong>📍 Delivery Address:</strong> {user.address.street}, {user.address.city}, {user.address.state} - {user.address.pincode}
+                        {user.address.landmark && ` (Near: ${user.address.landmark})`}
+                    </p>
+                </div>
+            )}
 
             {message && (
                 <div style={{
@@ -119,7 +167,7 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                 display: "flex",
                 gap: "1rem",
                 marginBottom: "2rem",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
                 paddingBottom: "1rem"
             }}>
                 <button
@@ -153,20 +201,20 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                         <div style={{ display: "grid", gap: "1rem" }}>
                             {resources.map((resource) => (
                                 <div key={resource._id} style={{
-                                    background: "rgba(255, 255, 255, 0.1)",
+                                    background: "rgba(255, 255, 255, 0.05)",
                                     padding: "1rem",
                                     borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)"
+                                    border: "1px solid rgba(255, 255, 255, 0.1)"
                                 }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                         <div>
                                             <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
                                                 {resource.name}
                                             </h4>
-                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem", opacity: 0.8 }}>
                                                 {resource.description}
                                             </p>
-                                            <p className="text" style={{ margin: 0, fontWeight: "bold" }}>
+                                            <p className="text" style={{ margin: 0, fontWeight: "bold", color: "#4ade80" }}>
                                                 ₹{resource.price}
                                             </p>
                                         </div>
@@ -196,10 +244,10 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                             <div style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
                                 {cart.map((item) => (
                                     <div key={item._id} style={{
-                                        background: "rgba(255, 255, 255, 0.1)",
+                                        background: "rgba(255, 255, 255, 0.05)",
                                         padding: "1rem",
                                         borderRadius: "0.5rem",
-                                        border: "1px solid rgba(255, 255, 255, 0.2)",
+                                        border: "1px solid rgba(255, 255, 255, 0.1)",
                                         display: "flex",
                                         justifyContent: "space-between",
                                         alignItems: "center"
@@ -208,7 +256,7 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                                             <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
                                                 {item.name}
                                             </h4>
-                                            <p className="text" style={{ margin: 0, fontWeight: "bold" }}>
+                                            <p className="text" style={{ margin: 0, fontWeight: "bold", color: "#4ade80" }}>
                                                 ₹{item.price}
                                             </p>
                                         </div>
@@ -223,15 +271,31 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                                 ))}
                             </div>
                             <div style={{
-                                background: "rgba(255, 255, 255, 0.1)",
-                                padding: "1rem",
+                                background: "rgba(255, 255, 255, 0.05)",
+                                padding: "1.5rem",
                                 borderRadius: "0.5rem",
-                                border: "1px solid rgba(255, 255, 255, 0.2)",
+                                border: "1px solid rgba(255, 255, 255, 0.1)",
                                 textAlign: "center"
                             }}>
-                                <h3 className="text">Total: ₹{calculateTotal()}</h3>
-                                <button className="btn" onClick={placeOrder}>
-                                    Place Order
+                                <h3 className="text" style={{ margin: "0 0 1rem 0" }}>Total: ₹{calculateTotal()}</h3>
+
+                                {/* Delivery Address Summary */}
+                                {user.address && (
+                                    <div style={{
+                                        marginBottom: "1rem",
+                                        padding: "0.75rem",
+                                        background: "rgba(0,0,0,0.2)",
+                                        borderRadius: "0.5rem",
+                                        fontSize: "0.85rem"
+                                    }}>
+                                        <p className="text" style={{ margin: 0, opacity: 0.8 }}>
+                                            📍 Deliver to: {user.address.street}, {user.address.city}
+                                        </p>
+                                    </div>
+                                )}
+
+                                <button className="btn" onClick={placeOrder} style={{ margin: 0 }}>
+                                    Place Order & Pay
                                 </button>
                             </div>
                         </>
@@ -249,46 +313,46 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                     <h3 className="text">My Orders</h3>
                     {myOrders.length > 0 ? (
                         <div style={{ display: "grid", gap: "1rem" }}>
-                            {myOrders.map((order) => (
-                                <div key={order._id} style={{
-                                    background: "rgba(255, 255, 255, 0.1)",
-                                    padding: "1rem",
-                                    borderRadius: "0.5rem",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)"
-                                }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div>
-                                            <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
-                                                Order #{order._id.slice(-8)}
-                                            </h4>
-                                            <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
-                                                Items: {order.items.length} | Total: ₹{order.totalAmount}
-                                            </p>
-                                            <p className="text" style={{ margin: 0, fontSize: "0.9rem" }}>
-                                                Date: {new Date(order.createdAt).toLocaleDateString()}
-                                            </p>
+                            {myOrders.map((order) => {
+                                const statusStyle = getStatusColor(order.status);
+                                return (
+                                    <div key={order._id} style={{
+                                        background: "rgba(255, 255, 255, 0.05)",
+                                        padding: "1rem",
+                                        borderRadius: "0.5rem",
+                                        border: "1px solid rgba(255, 255, 255, 0.1)"
+                                    }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <div>
+                                                <h4 className="text" style={{ margin: "0 0 0.5rem 0" }}>
+                                                    Order #{order._id.slice(-8)}
+                                                </h4>
+                                                <p className="text" style={{ margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>
+                                                    Items: {order.items.length} | Total: ₹{order.totalAmount}
+                                                </p>
+                                                <p className="text" style={{ margin: 0, fontSize: "0.9rem", opacity: 0.8 }}>
+                                                    Date: {new Date(order.createdAt).toLocaleDateString()}
+                                                </p>
+                                                {order.deliveryAddress && (
+                                                    <p className="text" style={{ margin: "0.5rem 0 0 0", fontSize: "0.85rem", opacity: 0.7 }}>
+                                                        📍 {order.deliveryAddress.street}, {order.deliveryAddress.city}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <span style={{
+                                                padding: "0.25rem 0.75rem",
+                                                borderRadius: "1rem",
+                                                fontSize: "0.8rem",
+                                                fontWeight: "bold",
+                                                background: statusStyle.bg,
+                                                color: statusStyle.color
+                                            }}>
+                                                {order.status.toUpperCase()}
+                                            </span>
                                         </div>
-                                        <span style={{
-                                            padding: "0.25rem 0.75rem",
-                                            borderRadius: "1rem",
-                                            fontSize: "0.8rem",
-                                            fontWeight: "bold",
-                                            background: order.status === "pending" ? 
-                                                "rgba(234, 179, 8, 0.2)" : 
-                                                order.status === "approved" ? 
-                                                "rgba(34, 197, 94, 0.2)" : 
-                                                "rgba(239, 68, 68, 0.2)",
-                                            color: order.status === "pending" ? 
-                                                "#eab308" : 
-                                                order.status === "approved" ? 
-                                                "#22c55e" : 
-                                                "#ef4444"
-                                        }}>
-                                            {order.status.toUpperCase()}
-                                        </span>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <p className="text">No orders found.</p>
@@ -297,10 +361,10 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
             )}
 
             {/* Navigation Buttons */}
-            <div style={{ 
-                marginTop: "2rem", 
-                display: "flex", 
-                gap: "1rem", 
+            <div style={{
+                marginTop: "2rem",
+                display: "flex",
+                gap: "1rem",
                 justifyContent: "center",
                 flexWrap: "wrap"
             }}>
@@ -314,6 +378,22 @@ export default function VendorPortal({ user, onHome, onUserData, onComplaints })
                     Logout
                 </button>
             </div>
+
+            {/* Payment Modal */}
+            {showPaymentModal && currentOrder && (
+                <PaymentModal
+                    payment={{
+                        amount: currentOrder.totalAmount,
+                        _id: "new_payment",
+                        orderId: currentOrder._id
+                    }}
+                    onClose={() => {
+                        setShowPaymentModal(false);
+                        setCurrentOrder(null);
+                    }}
+                    onSuccess={handlePaymentSuccess}
+                />
+            )}
         </div>
     );
 }
