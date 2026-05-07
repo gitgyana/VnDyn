@@ -1,4 +1,4 @@
-import {Routes, Route, Navigate, useNavigate} from 'react-router-dom'
+import {Routes, Route, Navigate} from 'react-router-dom'
 import {AuthProvider, useAuth} from './AuthContext'
 import Home from './components/Home'
 import Login from './components/Login'
@@ -19,33 +19,20 @@ function ProtectedRoute({children, allowedTypes}) {
 
 function AppRoutes() {
     const {user} = useAuth()
-
     return (
         <Routes>
             <Route path="/" element={user ? <Navigate to="/dashboard" replace/> : <Home/>}/>
             <Route path="/login" element={user ? <Navigate to="/dashboard" replace/> : <Login/>}/>
             <Route path="/signup" element={user ? <Navigate to="/dashboard" replace/> : <Signup/>}/>
             <Route path="/signup/:type" element={user ? <Navigate to="/dashboard" replace/> : <Signup/>}/>
-
-            <Route path="/dashboard" element={
-                <ProtectedRoute><Dashboard/></ProtectedRoute>
-            }/>
-            <Route path="/vendor" element={
-                <ProtectedRoute allowedTypes={["Street Vendor"]}><VendorPortal/></ProtectedRoute>
-            }/>
-            <Route path="/supplier" element={
-                <ProtectedRoute allowedTypes={["Retailer to Vendor"]}><SupplierPortal/></ProtectedRoute>
-            }/>
-            <Route path="/admin" element={
-                <ProtectedRoute allowedTypes={["Admin"]}><Admin/></ProtectedRoute>
-            }/>
-            <Route path="/payments" element={
-                <ProtectedRoute><PaymentProcessing/></ProtectedRoute>
-            }/>
-            <Route path="/complaints" element={
-                <ProtectedRoute><ComplaintForm/></ProtectedRoute>
-            }/>
-
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+            <Route path="/vendor"
+                   element={<ProtectedRoute allowedTypes={["Street Vendor"]}><VendorPortal/></ProtectedRoute>}/>
+            <Route path="/supplier"
+                   element={<ProtectedRoute allowedTypes={["Retailer to Vendor"]}><SupplierPortal/></ProtectedRoute>}/>
+            <Route path="/admin" element={<ProtectedRoute allowedTypes={["Admin"]}><Admin/></ProtectedRoute>}/>
+            <Route path="/payments" element={<ProtectedRoute><PaymentProcessing/></ProtectedRoute>}/>
+            <Route path="/complaints" element={<ProtectedRoute><ComplaintForm/></ProtectedRoute>}/>
             <Route path="*" element={<Navigate to="/" replace/>}/>
         </Routes>
     )
